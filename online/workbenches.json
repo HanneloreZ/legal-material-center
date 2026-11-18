@@ -36,6 +36,19 @@
     "outputs": "PNG · 标注 JSON · 项目方案 · 数据包"
   },
   {
+    "id": "scans",
+    "name": "扫描件模拟",
+    "subtitle": "从电子文档到纸张质感",
+    "description": "将Word、PDF或图片制作成扫描件，调整倾斜、弯曲、折痕、噪点与阴影，添加手写批注和画线。",
+    "documents": [
+      "纸张扫描",
+      "黑白复印",
+      "手机拍纸",
+      "手写批注"
+    ],
+    "outputs": "扫描PDF · 逐页PNG／JPG · 制作记录"
+  },
+  {
     "id": "business",
     "name": "业务文书",
     "subtitle": "尽调记录与合同履行",

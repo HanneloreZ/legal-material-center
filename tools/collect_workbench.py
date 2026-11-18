@@ -99,7 +99,8 @@ def collect(business_package, authoring_package, output, expected_origin=None):
                 raise ValueError('制作记录与文件映射冲突')
             if expected_origin and item.get('origin') != expected_origin:
                 raise ValueError('实际制件origin与任务允许的工作台不符')
-            if item['format'] in ('jpg','jpeg','txt','md') and item.get('producer') != 'original':
+            if (item['format'] in ('jpg','jpeg','txt','md') and item.get('producer') != 'original'
+                    and not (item['format'] == 'jpg' and item.get('producer') == 'scans')):
                 raise ValueError('原件格式不可伪装为其他producer')
             if item.get('producer') == 'original':
                 source = item.get('source_record')

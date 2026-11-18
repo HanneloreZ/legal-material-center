@@ -17,6 +17,7 @@ if [[ ! -x node_modules/.bin/vite ]]; then
   read '?按回车结束。'
   exit 1
 fi
+node tools/prepare-scan-assets.mjs
 node_modules/.bin/vite --host 127.0.0.1 --port 3016 --strictPort &
 preview_pid=$!
 trap 'kill "$preview_pid" 2>/dev/null || true' EXIT

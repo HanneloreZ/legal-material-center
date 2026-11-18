@@ -43,7 +43,8 @@
               "documents",
               "images",
               "original",
-              "screenshots"
+              "screenshots",
+              "scans"
             ]
           },
           "formats": {

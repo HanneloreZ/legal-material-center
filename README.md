@@ -1,6 +1,8 @@
 # 测试案例素材中心
 
-当前本地版本为1.4.0。已接入“微信截图”：首页或“文档与图片”可进入 `/screenshots/`，支持编辑、原项目导入、统一批量制作及PNG交付；标注与项目配置保存在制作记录包。双击 `启动Reference合成工作台.command` 打开统一入口。详见 [SCREENSHOTS_HANDOFF.md](SCREENSHOTS_HANDOFF.md)。
+当前版本为1.5.0。新增“扫描件模拟” `/scans/`：将合成Word／PDF或图片转成扫描件，支持倾斜、弯曲、折痕、字迹褪色、手写批注与画线，导出图像PDF和逐页PNG／JPG。详见 [SCANS_HANDOFF.md](SCANS_HANDOFF.md)。
+
+1.4.0版本新增内容：已接入“微信截图”：首页或“文档与图片”可进入 `/screenshots/`，支持编辑、原项目导入、统一批量制作及PNG交付；标注与项目配置保存在制作记录包。双击 `启动Reference合成工作台.command` 打开统一入口。详见 [SCREENSHOTS_HANDOFF.md](SCREENSHOTS_HANDOFF.md)。
 
 1.3.1版本新增内容：新增“文档与图片”：七门类42种文书结构模板、四类图片、专家原件保真接收，详见 [MATERIALS_HANDOFF.md](MATERIALS_HANDOFF.md)。进入 `http://127.0.0.1:3016/materials/`，可直接制作或送入统一批次。本轮未增加表格模型或公式工作簿，历史说明如下。
 

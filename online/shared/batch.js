@@ -1,7 +1,7 @@
 export const BATCH_SCHEMA = 'material-batch/1';
 export const RENDER_VERSION = 'material-render/1.3.0';
-export const ENGINES = ['finance','rights','contracts','certificates','business','documents','images','original','screenshots'];
-export const ENGINE_FORMATS={screenshots:['png'],finance:['pdf','png','svg','xlsx','csv'],rights:['pdf','png','svg'],contracts:['docx'],certificates:['pdf','png','svg'],business:['docx','xlsx','csv'],documents:['docx','pdf','png','svg'],images:['pdf','png','svg','docx'],original:['pdf','docx','png','jpg','jpeg','txt','md']};
+export const ENGINES = ['finance','rights','contracts','certificates','business','documents','images','original','screenshots','scans'];
+export const ENGINE_FORMATS={scans:['pdf','png','jpg'],screenshots:['png'],finance:['pdf','png','svg','xlsx','csv'],rights:['pdf','png','svg'],contracts:['docx'],certificates:['pdf','png','svg'],business:['docx','xlsx','csv'],documents:['docx','pdf','png','svg'],images:['pdf','png','svg','docx'],original:['pdf','docx','png','jpg','jpeg','txt','md']};
 const copy = value => structuredClone(value);
 export function canonical(value) {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -77,7 +77,7 @@ export function deliveryMap(batch) {
   const used=new Set();
   return batch.documents.flatMap(doc=>(doc.artifacts || []).map(file=>{
     let stem=doc.title.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,85) || '业务材料';
-    if(doc.engine!=='original'&&['png','svg'].includes(file.format))stem+='_第'+(Number(file.path.match(/_p(\d+)\./)?.[1]) || 1)+'页';
+    if(doc.engine!=='original'&&(['png','svg'].includes(file.format)||(doc.engine==='scans'&&file.format==='jpg')))stem+='_第'+(Number(file.path.match(/_p(\d+)\./)?.[1]) || 1)+'页';
     let path=`Reference/${stem}.${file.format}`,n=1;while(used.has(path))path=`Reference/${stem}（${++n}）.${file.format}`;used.add(path);
     return {artifact_id:file.artifact_id,document_id:doc.document_id,business_document:true,producer:doc.engine,format:file.format,sha256:file.sha256,bytes:file.bytes,page_count:file.page_count,path,source_path:file.path,origin:file.origin ?? null,transformation:'identity',...(file.source_record?{source_record:file.source_record}:{})};
   }));
@@ -180,6 +180,7 @@ export class BatchRunner {
         const annotation={...file.screenshot_annotation,image:{...file.screenshot_annotation.image,filename:path},rect_attrs:file.screenshot_annotation.rect_attrs.map(rect=>({...rect,image_tail:path.split('/').at(-1)}))};
         zip.file(`截图标注/${doc.document_id}-r${doc.revision}.json`,JSON.stringify(annotation,null,2));
       }
+      for(const doc of batch.documents){const record=doc.artifacts?.find(file=>file.scan_record)?.scan_record;if(doc.engine==='scans'&&record)zip.file(`扫描记录/${doc.document_id}-r${doc.revision}.json`,JSON.stringify(record,null,2));}
       zip.file('冻结输入.json',JSON.stringify({schema_version:BATCH_SCHEMA,batch_id:batch.batch_id,name:batch.name,documents:batch.documents.map(({input_digest,status,attempts,artifacts,error,...doc})=>doc)},null,2));
       const {observedFinancialLedgers}=await import('./finance-data.js');
       zip.file('observed_financial_ledgers.json',JSON.stringify(await observedFinancialLedgers(batch),null,2));

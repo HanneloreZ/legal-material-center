@@ -112,3 +112,14 @@ python3 tools/collect_workbench.py \
 业务材料包仅含实际PNG。制作记录包包含原有冻结输入、哈希及文件映射，并新增 `截图标注/<document_id>-r<revision>.json`，保留可见消息、最终像素坐标、参与人、头像来源及完整项目；标注中的文件名对应业务包实际路径。截图预览的选中框与标注框不写入PNG。PNG不包含可检索文字层。
 
 `collect_workbench.py` 可按真实哈希回收PNG，保持 `producer=screenshots`。本次接入仅修改本地工作台；云端Reference计划、producer schema、路由和gate仍需单独扩展，不能将截图路线改标为其他引擎。旧独立站点草稿需从原站导出项目JSON，再在本机导入；不同origin的localStorage不会自动迁移。
+
+
+## 扫描件扩展（1.5.0）
+
+新增 `engine: "scans"`，payload为 `{scan: <scan-document/1>}`，输出支持PDF、PNG、JPG。来源source使用 `original-document/1` 完整字节、大小与SHA256结构，限PDF／DOCX／PNG／JPEG。方案另外包含id、title、settings和逐页marks。`get_template(engine="scans")` 提供完整默认参数、预设和来源要求；通过扫描页读取实际文件，不能虚构source哈希。
+
+settings支持固定seed、dpi（100／150／200）、quality、mode、paper、noise、shadow、tilt、blur、contrast、fold、perspective、curve、inkWear和watermark。marks按零起始页码记录文字或标准化画线点，正文与批注一同变形。扫描PDF必须使用 `pdf_mode: "image"`，不加入可检索文字层。
+
+来源最大12MB、30页，批次仍为20MB。DOCX采用浏览器重排，不宣称与Word原版分页相同；需原版保真时先提供PDF。复杂脚注、多栏、未处理修订、跨页合并单元格和超大单块内容须先从Word导出PDF。
+
+业务包仅放最终扫描件。制作记录新增 `扫描记录/<document_id>-r<revision>.json`，包含实际来源哈希、参数、批注、转换方式及每页尺寸；冻结输入保留原始source。PNG／JPG每页一件文件，同一来源的多页和多格式共用document_id。收集器支持scans生成的JPG，仍拒绝其他producer伪装原件格式。后端计划、路由和gate须显式接入scans，不改标为native或original。
