@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-shareholder-resolution",
+  "template_id": "shareholder-resolution",
+  "title": "股东会决议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "subject": "本件所列合成主体与示例事项",
+    "meeting": "2026-09-18，示例书面议事",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "通知与参加情况",
+      "body": "分别列明召集、通知、参加主体、代理、持股及回避信息。"
+    },
+    {
+      "heading": "事项及表决",
+      "body": "按议案逐项填写表决权数、同意反对弃权和决议原文；工作台不推定通过。"
+    },
+    {
+      "heading": "形成及签署",
+      "body": "会议记录、签署及批准状态独立保存，不以草稿标题认定已生效。"
+    }
+  ]
+}

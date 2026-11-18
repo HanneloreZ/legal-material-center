@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-board-resolution",
+  "template_id": "board-resolution",
+  "title": "董事会决议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "subject": "本件所列合成主体与示例事项",
+    "meeting": "2026-09-18，示例现场会议",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "召集、出席与表决",
+      "body": "记录通知、召集、应出席、实际出席、回避和表决票数。示例仅演示字段，不自动判断决议效力。"
+    },
+    {
+      "heading": "议案与决议原文",
+      "body": "填写逐项议案、决议原文、附带条件及授权范围。"
+    },
+    {
+      "heading": "签署与附件",
+      "body": "出席名单、签署页、通知和会议记录分别列为附件。"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-medical-device-registration",
+  "template_id": "medical-device-registration",
+  "title": "医疗器械注册及技术要求",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "model": "示例产品A，型号SYN-A",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "注册记载",
+      "body": "按原件填写注册人、产品、型号、适用范围、编号及有效期。"
+    },
+    {
+      "heading": "技术要求与版本",
+      "body": "技术参数、软件版本及后续变化逐项记载，保留单位、限值和原始描述。"
+    },
+    {
+      "heading": "变更及附件",
+      "body": "变更申请、批准与实施分别记录；不能从内部升级或申请推定注册范围变化已获批准。"
+    }
+  ]
+}

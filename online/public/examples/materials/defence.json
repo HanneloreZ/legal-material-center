@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-defence",
+  "template_id": "defence",
+  "title": "答辩状",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "答辩意见",
+      "body": "按实际答辩文本列明对每项请求的回应。"
+    },
+    {
+      "heading": "事实、理由及证据",
+      "body": "分别记录认可、争议、待核事实及证据位置；不自动将对方主张改写为已查明事实。"
+    },
+    {
+      "heading": "签署及提交",
+      "body": "答辩人、签署日、提交及收件状态按实际情况填写。"
+    }
+  ]
+}

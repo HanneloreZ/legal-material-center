@@ -12,6 +12,30 @@
     "outputs": "可检索 PDF · Word · 独立交付包"
   },
   {
+    "id": "materials",
+    "name": "文档与图片",
+    "subtitle": "七类法律业务文书与图片证据",
+    "description": "按门类编辑文书，制作聊天、网页、考勤和图示，保留专家已有原件。",
+    "documents": [
+      "分门类文书",
+      "图片与内容转录",
+      "原件保真接收"
+    ],
+    "outputs": "Word · PDF · PNG · SVG · 原件"
+  },
+  {
+    "id": "screenshots",
+    "name": "微信截图",
+    "subtitle": "单聊、群聊与消息标注",
+    "description": "编辑微信风格对话与人物头像，制作转账、文件、语音和引用消息截图，可送入统一批次。",
+    "documents": [
+      "iOS与Android",
+      "单聊与群聊",
+      "头像与消息标注"
+    ],
+    "outputs": "PNG · 标注 JSON · 项目方案 · 数据包"
+  },
+  {
     "id": "business",
     "name": "业务文书",
     "subtitle": "尽调记录与合同履行",

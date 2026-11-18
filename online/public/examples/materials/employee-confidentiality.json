@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-employee-confidentiality",
+  "template_id": "employee-confidentiality",
+  "title": "员工保密协议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employer": "清岑示例技术有限公司（合成）",
+    "employee": "林岑（合成）",
+    "scope": "内部项目资料和获准访问的技术文件",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "信息范围与接触权限",
+      "body": "示例列明资料目录SYN-INFO-001及岗位获准访问范围；公开信息、已有信息和其他例外由双方明确。"
+    },
+    {
+      "heading": "保存、使用与交还",
+      "body": "填写资料访问、复制、对外提供及离岗交还的具体约定，不自动扩大到未列明的信息。"
+    },
+    {
+      "heading": "期限与签署",
+      "body": "义务期限、责任条款及双方签署页分别保留。本文为合成示例，未载事实不自动补全。"
+    }
+  ]
+}

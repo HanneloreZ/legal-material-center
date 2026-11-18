@@ -3,6 +3,10 @@ import {withTimeout} from './pdf.js';
 const safeName = name => name.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,85) || '材料';
 export async function prepareDocument(doc) {
   const payload=doc.payload;
+  if(doc.engine==='screenshots'){const {prepareScreenshot}=await import('../screenshots/batch.js');return prepareScreenshot(doc);}
+  if(['documents','images','original'].includes(doc.engine)){
+    const {prepareMaterial}=await import('../materials/render.js');return prepareMaterial(doc);
+  }
   if(doc.engine==='business'){
     const model=await import('../business/model.js');const document=model.cleanBusiness(payload.document);
     if(doc.formats.some(f=>!model.formatsFor(document).includes(f)))throw Error('本类业务文书不支持所选格式');
@@ -58,6 +62,10 @@ export async function validateRequest(request) {
   return (await Promise.all(request.documents.map(validateDocument))).flat();
 }
 export async function renderMaterial(doc, dependencies={}) {
+  if(doc.engine==='screenshots'){const {renderScreenshot}=await import('../screenshots/batch.js');return renderScreenshot(doc,dependencies);}
+  if(['documents','images','original'].includes(doc.engine)){
+    const {renderNewMaterial}=await import('../materials/render.js');return renderNewMaterial(doc,dependencies);
+  }
   const prepared=await prepareDocument(doc),appearance=doc.appearance || 'digital';
   const base=`Reference/${doc.document_id}/r${doc.revision}/${safeName(doc.title)}`;
   if(doc.engine==='business'){
@@ -110,6 +118,10 @@ export async function renderMaterial(doc, dependencies={}) {
   return files;
 }
 export async function editorRequest(engine,project,{appearance='digital',batch_id}={}) {
+  if(engine==='screenshots'){const {screenshotRequest}=await import('../screenshots/batch.js');return screenshotRequest(project,{batch_id});}
+  if(['documents','images','original'].includes(engine)){
+    const {materialsRequest}=await import('../materials/render.js');return materialsRequest(engine,project);
+  }
   if(engine==='business'){
     const {cleanBusiness}=await import('../business/model.js');const document=cleanBusiness(project);
     return {schema_version:BATCH_SCHEMA,batch_id:batch_id||'business-'+(await digest(document.id)).slice(0,20),name:document.title,documents:[{document_id:'business-'+(await digest(document.id)).slice(0,20),revision:1,title:document.title,engine:'business',formats:document.kind==='ledger'?['xlsx','csv']:['docx'],payload:{document}}]};
@@ -186,9 +198,10 @@ export async function capabilities() {
   const {kinds,schema}=await import('../modules/rights/lib/registry.ts');
   const {templates:certificates}=await import('../certificates/lib/templates.ts');
   const {definitions:business}=await import('../business/model.js');
+  const {documentTemplates,imageTemplates,domains}=await import('../materials/catalog.js');
   return {schema_version:BATCH_SCHEMA,renderer_version:RENDER_VERSION,entry:'batch/',limits:{documents:500},
     pdf_modes:['searchable','image'],pdf_note:'保留原版面并叠加实际SVG文字；底图图片内文字不包括在文字层。合同仅支持DOCX。',
-    engines:{business:{formats:['docx','xlsx','csv'],templates:business,payload:{document:'business-document/1完整文书；台账金额使用整数分'},pipeline_route:{producer:'native',tool:'node tools/render-native-business.mjs',note:'当前Reference管线普通文书和台账使用本地native生成。浏览器业务模块导出的真实producer为business；启用该路线需后端扩展producer契约，不伪装为其他模块。'}},finance:{formats:['pdf','png','svg','xlsx','csv'],kinds:['invoice','receipt','statement','voucher'],payload:{project:'财务工作台完整version 1方案',kind:'材料种类',transaction_id:'非流水必填，匹配project.transactions[].id',stage:'invoice或payment；凭证使用',voucher_variant:'ledger或business；凭证使用'}},
+    engines:{screenshots:{formats:['png'],templates:['reference','loan','labor','sale','group'],payload:{project:'Screenshot Legal Studio schema_version 1.0完整项目'},limits:{messages:100,participants:20,cases:100},scope_note:'合成聊天截图；标注和项目配置进入制作记录包，业务材料包仅包含PNG。统一批次不支持scan外观。'},documents:{formats:['docx','pdf','png','svg'],domains,templates:documentTemplates,payload:{document:'legal-document/1'},scope_note:'专用字段与可编辑正文；不推断法律结论，证件类为资料记载页，不冒充真实原件'},images:{formats:['pdf','png','svg','docx'],templates:imageTemplates,payload:{image:'legal-image/1'},scope_note:'聊天、网页、考勤、流程图为带合成标识的生成示例；DOCX为内容转录。实际截图使用original接收'},original:{formats:['pdf','docx','png','jpg','jpeg','txt','md'],payload:{original:'original-document/1：base64原字节、大小、SHA256及来源声明'},max_file_bytes:12582912,scope_note:'原格式、原字节交付；不OCR、不自动脱敏，不自动接受或拒绝Word修订，不进行格式转换。来源与脱敏状态为用户声明，不代表工作台核实。新producer须由后端显式接入'},business:{formats:['docx','xlsx','csv'],templates:business,payload:{document:'business-document/1完整文书；台账金额使用整数分'},pipeline_route:{producer:'native',tool:'node tools/render-native-business.mjs',note:'当前Reference管线普通文书和台账使用本地native生成。浏览器业务模块导出的真实producer为business；启用该路线需后端扩展producer契约，不伪装为其他模块。'}},finance:{formats:['pdf','png','svg','xlsx','csv'],kinds:['invoice','receipt','statement','voucher'],payload:{project:'财务工作台完整version 1方案',kind:'材料种类',transaction_id:'非流水必填，匹配project.transactions[].id',stage:'invoice或payment；凭证使用',voucher_variant:'ledger或business；凭证使用'}},
       rights:{formats:['pdf','png','svg'],templates:kinds.map(k=>({id:k.id,name:k.name,views:k.views,fields:schema[k.id]})),payload:{record:'权属工作台RecordItem',view:'对应类型支持的文书视图'}},
       contracts:{formats:['docx'],templates:templates.map(t=>({id:t.id,title:t.title,version:t.version,fields:fields(t)})),payload:{draft:'合同工作台完整schema 1案件快照；可通过get_template获取完整示例'}},
       certificates:{formats:['pdf','png','svg'],templates:certificates.map(t=>({id:t.id,title:t.title,revision:t.revision,fields:t.fields,medium:t.medium,scope_note:t.scope_note})),pending_templates:['CMMI专用参考版式'],payload:{project:'企业证照完整version 1填写方案'}}},
@@ -197,6 +210,10 @@ export async function capabilities() {
     schema:batchInputSchema};
 }
 export async function templateExample(engine,id) {
+  if(engine==='screenshots'){const {screenshotExample}=await import('../screenshots/batch.js');return {project:screenshotExample(id)};}
+  if(engine==='documents'){const {exampleDocument}=await import('../materials/documents.js');return {document:exampleDocument(id)};}
+  if(engine==='images'){const {exampleImage}=await import('../materials/images.js');return {image:exampleImage(id)};}
+  if(engine==='original')return {schema_version:'original-document/1',note:'使用原件选择器读取真实文件及SHA256；不返回虚构原件。',required:['id','title','file.name','file.format','file.bytes','file.sha256','file.data_base64','source.kind','source.label','source.redaction','source.notes']};
   if(engine==='business'){const {exampleBusiness,exampleLedger}=await import('../business/examples.js');return {document:id?.startsWith('ledger:')?exampleLedger(id.split(':')[1]):exampleBusiness(id||'interview')};}
   if(engine==='contracts') {
     const {templates,examples}=await import('../contracts/templates.js'),{newDraft}=await import('../contracts/model.js');
@@ -208,4 +225,4 @@ export async function templateExample(engine,id) {
   if(engine==='rights'){const {kinds,schema,newRecord}=await import('../modules/rights/lib/registry.ts');const [kind,view]=String(id).split(':');if(!kinds.some(k=>k.id===kind))throw Error('未找到权属类型');const record=newRecord(kind);if(view){if(!kinds.find(k=>k.id===kind).views.some(v=>v.id===view))throw Error('该权属类型不支持本视图');const {extensionExample}=await import('../modules/rights/lib/extensions.ts');record.fields={...record.fields,...extensionExample(kind,view)};record.views=[view];}return {record,fields:schema[kind]};}
   throw Error('材料引擎无效');
 }
-export const batchInputSchema={type:'object',properties:{schema_version:{type:'string',const:BATCH_SCHEMA},batch_id:{type:'string',pattern:'^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$'},name:{type:'string',minLength:1,maxLength:150},documents:{type:'array',minItems:1,maxItems:500,items:{type:'object',properties:{document_id:{type:'string'},revision:{type:'integer',minimum:1},title:{type:'string'},engine:{type:'string',enum:['finance','rights','contracts','certificates','business']},formats:{type:'array',items:{type:'string',enum:['pdf','docx','png','svg','xlsx','csv']},minItems:1,uniqueItems:true},pdf_mode:{type:'string',enum:['searchable','image']},appearance:{type:'string',enum:['digital','scan']},payload:{type:'object',description:'对应工作台完整方案及选中的材料范围；结构见get_capabilities和get_template'}},required:['document_id','revision','title','engine','formats','payload'],additionalProperties:false}}},required:['schema_version','batch_id','name','documents'],additionalProperties:false};
+export const batchInputSchema={type:'object',properties:{schema_version:{type:'string',const:BATCH_SCHEMA},batch_id:{type:'string',pattern:'^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$'},name:{type:'string',minLength:1,maxLength:150},documents:{type:'array',minItems:1,maxItems:500,items:{type:'object',properties:{document_id:{type:'string'},revision:{type:'integer',minimum:1},title:{type:'string'},engine:{type:'string',enum:['finance','rights','contracts','certificates','business','documents','images','original','screenshots']},formats:{type:'array',items:{type:'string',enum:['pdf','docx','png','svg','xlsx','csv','jpg','jpeg','txt','md']},minItems:1,uniqueItems:true},pdf_mode:{type:'string',enum:['searchable','image']},appearance:{type:'string',enum:['digital','scan']},payload:{type:'object',description:'对应工作台完整方案及选中的材料范围；结构见get_capabilities和get_template'}},required:['document_id','revision','title','engine','formats','payload'],additionalProperties:false}}},required:['schema_version','batch_id','name','documents'],additionalProperties:false};

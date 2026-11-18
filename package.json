@@ -1,16 +1,18 @@
 {
   "name": "case-material-center",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node tools/export-batch-schema.mjs && tsx tools/export-due-diligence-examples.mjs && vite build",
+    "build": "node tools/export-batch-schema.mjs && tsx tools/export-due-diligence-examples.mjs && node tools/export-material-examples.mjs && vite build",
     "dev": "vite --host 127.0.0.1 --port 3016 --strictPort",
-    "test": "node tests/online.mjs && node tests/contracts.mjs && tsx tests/phase1.mjs && tsx tests/phase2.mjs && npm run test:collector",
+    "test": "node tests/online.mjs && node tests/contracts.mjs && tsx tests/phase1.mjs && tsx tests/phase2.mjs && npm run test:collector && npm run test:materials && npm run test:screenshots",
     "test:contracts": "node tests/contracts.mjs",
     "test:phase1": "tsx tests/phase1.mjs",
     "test:collector": "python3 -m unittest discover -s tests -p test_collect_workbench.py -v",
-    "test:phase2": "tsx tests/phase2.mjs"
+    "test:phase2": "tsx tests/phase2.mjs",
+    "test:materials": "tsx tests/materials.mjs",
+    "test:screenshots": "node tests/screenshots/engine.test.mjs && node tests/screenshots/editor.test.mjs && tsx tests/screenshots.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

@@ -32,7 +32,7 @@ def safe_archive(archive):
         names.add(info.filename)
 
 
-def inspect_office(data):
+def inspect_office(data, allow_hyperlinks=False):
     import io
     with zipfile.ZipFile(io.BytesIO(data)) as office:
         safe_archive(office)
@@ -41,8 +41,13 @@ def inspect_office(data):
                 raise ValueError('Office文件含宏或嵌入二进制对象')
             if name.endswith('.rels'):
                 root = ET.fromstring(office.read(name))
-                if any(item.attrib.get('TargetMode') == 'External' for item in root):
-                    raise ValueError('Office文件含外部链接，请先按Reference政策处理')
+                for item in root:
+                    if item.attrib.get('TargetMode') != 'External':
+                        continue
+                    is_link = (item.attrib.get('Type', '').endswith('/hyperlink')
+                               and re.match(r'^(https?:|mailto:)', item.attrib.get('Target', '')))
+                    if not allow_hyperlinks or not is_link:
+                        raise ValueError('Office文件含外部链接，请先按Reference政策处理')
 
 
 def write_preserving(path, data):
@@ -82,7 +87,7 @@ def collect(business_package, authoring_package, output, expected_origin=None):
             if (len(relative.parts) != 2 or relative.parts[0] != 'Reference'
                     or item['path'] in expected_paths or item['artifact_id'] in artifact_ids
                     or relative.suffix.lower() != '.' + item['format']
-                    or item['format'] not in ('pdf','docx','xlsx','csv','png','svg')):
+                    or item['format'] not in ('pdf','docx','xlsx','csv','png','svg','jpg','jpeg','txt','md')):
                 raise ValueError('文件映射路径、格式或编号无效')
             doc = document_report.get(item['document_id'])
             if not doc or doc.get('status') != 'succeeded':
@@ -94,11 +99,19 @@ def collect(business_package, authoring_package, output, expected_origin=None):
                 raise ValueError('制作记录与文件映射冲突')
             if expected_origin and item.get('origin') != expected_origin:
                 raise ValueError('实际制件origin与任务允许的工作台不符')
+            if item['format'] in ('jpg','jpeg','txt','md') and item.get('producer') != 'original':
+                raise ValueError('原件格式不可伪装为其他producer')
+            if item.get('producer') == 'original':
+                source = item.get('source_record')
+                if (not isinstance(source, dict) or source != recorded.get('source_record')
+                        or source.get('sha256') != item['sha256'] or source.get('bytes') != item['bytes']
+                        or source.get('redaction_verified_by_workbench') is not False):
+                    raise ValueError('原件来源记录缺失或与原字节不一致')
             data = business.read(item['path'])
             if len(data) != item['bytes'] or sha(data) != item['sha256']:
                 raise ValueError('实际下载文件大小或SHA256不匹配')
             if item['format'] in ('docx','xlsx'):
-                inspect_office(data)
+                inspect_office(data, allow_hyperlinks=item.get('producer') == 'original')
             raw_path = output / 'raw' / relative.name
             candidate_path = output / 'candidate' / relative.name
             for target in (raw_path, candidate_path):

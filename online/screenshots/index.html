@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="编辑虚构对话，制作微信风格截图和研究标注。"><title>微信截图工作台 · Screenshot Legal Studio</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<header class="topbar">
+ <a class="brand" href="./"><span class="brand-icon">聊<span>·</span></span><span>截图工作台<small>SCREENSHOT LEGAL STUDIO <b>2.0</b></small></span></a>
+ <a class="center-link" href="%BASE_URL%">← 素材中心</a><div class="history-actions"><button id="undoBtn" title="撤销 ⌘Z" aria-label="撤销">↶</button><button id="redoBtn" title="重做 ⌘⇧Z" aria-label="重做">↷</button><span id="saveStatus" class="local-dot" role="status">已在本地保存</span></div>
+ <div class="top-actions"><button id="scriptBtn">粘贴对话</button><button id="importBtn">打开项目</button><button id="saveBtn">保存项目</button><button id="queueScreenshotsBtn">送入批量制作</button><button id="exportBtn" class="primary">导出数据包 ↗</button></div>
+</header>
+<main class="workspace">
+ <aside class="sidebar">
+  <div class="sidebar-title"><span class="eyebrow">STUDIO SETTINGS</span><span>01</span></div>
+  <nav class="settings-tabs" aria-label="工作台设置"><button data-tab="appearance" class="active" aria-selected="true">外观</button><button data-tab="members" aria-selected="false">人物</button><button data-tab="batch" aria-selected="false">批量</button></nav>
+  <div class="side-body">
+   <section data-panel="appearance">
+    <div class="section-label">画面风格</div>
+    <button id="referenceStyleBtn" class="reference-preset"><span>▣</span><span><strong>iOS · 参考图比例</strong><small>402 × 874 / 3× 高清</small></span><span>↗</span></button>
+    <section class="settings">
+     <label>对话标题<input id="title" maxlength="60"></label>
+     <div class="two-col"><label>状态栏时间<input id="clock" maxlength="12"></label><label>电量 %<input id="battery" type="number" min="0" max="100"></label></div>
+     <div class="two-col"><label>设备<select id="device"><option value="ios">iOS</option><option value="android">Android</option></select></label><label>逻辑宽度<select id="width"><option value="402">402 px</option><option value="390">390 px</option><option value="430">430 px</option><option value="375">375 px</option></select></label></div>
+     <div class="two-col"><label>画面范围<select id="viewportHeight"><option value="874">整屏 · 874 px</option><option value="844">整屏 · 844 px</option><option value="932">整屏 · 932 px</option><option value="auto">完整长图</option></select></label><label>导出倍率<select id="scale"><option value="3">3× 超清</option><option value="2">2× 高清</option><option value="1">1× 原尺寸</option></select></label></div>
+     <label>输入栏<select id="inputMode"><option value="voice">可按住 转文字</option><option value="text">文字输入框</option></select></label>
+     <details class="typography-settings"><summary>字体与间距 <span>微调</span></summary><label>字体<select id="fontFamily"><option value="pingfang">苹方优先 · iOS</option><option value="system">跟随系统</option></select></label><label>字重<select id="fontWeight"><option value="300">细 · 300</option><option value="400">常规 · 400</option><option value="500">中等 · 500</option></select></label><div class="two-col"><label>字号<input id="fontSize" type="number" min="13" max="22" step="0.5"></label><label>行高<input id="lineHeight" type="number" min="19" max="32" step="0.5"></label></div><div class="two-col"><label>消息间距<input id="messageGap" type="number" min="8" max="28"></label><label>头像边长<input id="avatarSize" type="number" min="32" max="46"></label></div><small>字体使用当前设备的可用字体。</small></details>
+     <label class="check"><input type="checkbox" id="group">群聊 · 显示对方昵称</label><label class="check"><input type="checkbox" id="watermark">显示「合成样本」标记</label>
+    </section>
+    <section class="templates"><div class="section-label">试试这些场景 <span>虚构对话</span></div><button class="preset" data-template="reference"><span class="preset-icon">☏</span><span>日常聊天<small>对照字体与截图比例</small></span><span>›</span></button><button class="preset" data-template="loan"><span class="preset-icon">⇄</span><span>借款与还款<small>催还 · 商量延期 · 转账</small></span><span>›</span></button><button class="preset" data-template="labor"><span class="preset-icon">▤</span><span>劳动沟通<small>工作安排 · 文件 · 撤回</small></span><span>›</span></button><button class="preset" data-template="sale"><span class="preset-icon">▦</span><span>买卖与履约<small>订单 · 语音 · 发货</small></span><span>›</span></button><button class="preset" data-template="group"><span class="preset-icon">♧</span><span>项目对接群<small>多成员 · 文件 · 引用</small></span><span>›</span></button></section>
+   </section>
+   <section data-panel="members" hidden><div id="participantsPanel" class="participants-panel"></div></section>
+   <section data-panel="batch" hidden><section class="batch-panel"><div class="section-label">批量合成</div><p id="batchHint">按当前对话替换虚构姓名与金额，也可以打开包含 cases 数组的项目。</p><div class="batch-controls"><label>数量<input id="batchCount" type="number" value="10" min="1" max="100"></label><label>随机种子<input id="seed" type="number" value="42" min="0" max="4294967295"></label><button id="batchBtn" class="primary">合成 ZIP ↗</button></div><button id="queueScreenshotBatchBtn">这批送入统一制作</button><button class="text-btn" id="exampleBtn">下载批量项目示例 ↓</button></section></section>
+  </div>
+  <div class="sidebar-note"><span class="local-dot">虚构对话 · 用于设计与评测</span><a href="%BASE_URL%screenshots-assets/NOTICE.txt" target="_blank" rel="noreferrer">界面参考与致谢 ↗</a></div>
+ </aside>
+ <section class="preview-panel">
+  <div class="preview-heading"><div><div class="eyebrow">YOUR CONVERSATION</div><h1>让对话，看起来更自然。<span class="live-dot"></span></h1></div><button id="pngBtn" class="primary">下载 PNG ↓</button></div>
+  <div class="preview-toolbar"><span id="dimensions"></span><label class="check"><input type="checkbox" id="boxes">标注框</label><label class="zoom-control">预览 <select id="previewZoom"><option value="fit">适应</option><option value="100">100%</option><option value="80">80%</option></select></label></div>
+  <div class="preview-viewport"><div class="canvas-scroll"><div class="canvas-stage"><canvas id="preview" aria-label="合成聊天截图预览"></canvas><div id="selectedOutline" hidden></div></div><div id="emptyPreview" hidden>添加消息以生成截图</div></div></div>
+  <div class="capture-controls"><div><label for="captureOffset">截图位置</label><span id="captureHint"></span></div><div class="capture-slider"><span>最新</span><input id="captureOffset" type="range" min="0" max="0" value="0" step="1" aria-label="截图位置"><span>更早</span></div><button id="jumpLatest" class="text-btn">回到最新消息 ↓</button></div>
+  <div class="preview-bottom"><span>点击气泡，直接编辑对应消息</span><button id="annotationBtn" class="text-btn">下载标注 JSON ↓</button></div>
+ </section>
+ <section class="editor">
+  <div class="editor-head"><div><div class="eyebrow">CONVERSATION EDITOR</div><h2>对话内容 <span id="messageCount"></span></h2></div><button id="addBtn" class="subtle">＋ 添加</button></div>
+  <div class="people" hidden><label><span class="left-avatar"></span><input id="leftName"></label><label><span class="right-avatar"></span><input id="rightName"></label></div>
+  <div class="message-search"><span>⌕</span><input id="messageSearch" placeholder="查找消息或发言人" aria-label="查找消息或发言人"></div>
+  <div id="messages" class="message-list"></div>
+  <div class="quick-add" aria-label="快速添加消息"><button data-add-type="text">＋ 文字</button><button data-add-type="image">图片</button><button data-add-type="transfer">转账</button><button data-add-type="file">文件</button><button data-add-type="voice">语音</button><button data-add-type="timestamp">时间</button><button data-add-type="call">通话</button><button data-add-type="recall">撤回</button><button data-add-type="sticker">表情包</button></div>
+  <section id="inspector" class="inspector"></section>
+ </section>
+</main>
+<dialog id="scriptDialog" class="script-dialog"><div class="dialog-head"><div><div class="eyebrow">QUICK IMPORT</div><h2>把对话粘贴进来</h2></div><button id="closeScript" aria-label="关闭对话导入">×</button></div><p>每行一条，「我」显示在右侧。新名字会自动加入参与人。</p><textarea id="scriptInput" aria-label="对话文本" spellcheck="false" placeholder="13:42&#10;老板：今天能还吗？&#10;我：这两天家里临时有点事，手头有点紧。&#10;我：今天先转 1000 给你，剩下的能不能缓到月底？&#10;老板：行，月底记得给我。&#10;我：[转账 1000] 先还一部分"></textarea><details class="script-help"><summary>文件、语音等消息怎么写</summary><pre>我：[转账 1000 已收款] 先还一部分
+老板：[收款 1000]
+我：[文件 清单.pdf|238 KB|已下载]
+老板：[语音 8秒] 行，月底记得啊。
+我：[通话 已接通 02:36]
+老板：[撤回]
+[时间 昨天 18:39]</pre></details><div class="script-options"><label><input type="radio" name="scriptMode" value="append" checked>追加到当前对话</label><label><input type="radio" name="scriptMode" value="replace">替换全部消息</label></div><div id="scriptResult" role="status"></div><div class="dialog-actions"><button id="scriptCheck">检查内容</button><button id="applyScript" class="primary">导入对话</button></div></dialog>
+<dialog id="avatarDialog" class="avatar-dialog"><div class="dialog-head"><div><div class="eyebrow">AVATAR LIBRARY</div><h2 id="avatarDialogTitle">选择头像</h2></div><button id="closeAvatars" aria-label="关闭头像库">×</button></div><p class="avatar-intro">内置图片按来源标注为 CC0。点击应用后，图片与来源信息一起保存在项目里。</p><div id="avatarTabs" class="avatar-tabs"></div><div class="avatar-search"><input id="avatarSearchInput" aria-label="在线搜索 CC0 图片" placeholder="在线搜索 CC0 图片，如 mountain / 猫"><button id="avatarSearchBtn">搜索 Commons</button><button id="moreIllustrations">更多插画</button></div><p id="avatarLibraryStatus" class="avatar-library-status" role="status"></p><div id="avatarGrid" class="avatar-grid"></div><div class="avatar-library-footer"><button id="localAvatarUpload">上传本地图片 ↑</button><span>内置图库无需联网；在线搜索会连接图片提供方。</span></div></dialog><input id="fileInput" type="file" accept="application/json,.json" hidden><div id="toast" role="status" aria-live="polite"></div><dialog id="importDialog"><form method="dialog"><div class="dialog-head"><h2>导入数据</h2><button aria-label="关闭">×</button></div><p id="importSummary"></p><div class="dialog-actions"><button value="cancel">取消</button><button id="confirmImport" value="confirm" class="primary">载入项目</button></div></form></dialog><script type="module" src="app.js"></script></body></html>

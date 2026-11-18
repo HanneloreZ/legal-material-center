@@ -39,7 +39,11 @@
               "rights",
               "contracts",
               "certificates",
-              "business"
+              "business",
+              "documents",
+              "images",
+              "original",
+              "screenshots"
             ]
           },
           "formats": {
@@ -52,7 +56,11 @@
                 "png",
                 "svg",
                 "xlsx",
-                "csv"
+                "csv",
+                "jpg",
+                "jpeg",
+                "txt",
+                "md"
               ]
             },
             "minItems": 1,

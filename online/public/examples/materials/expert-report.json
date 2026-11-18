@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-expert-report",
+  "template_id": "expert-report",
+  "title": "鉴定与检验材料",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "委托、对象与范围",
+      "body": "填写委托事项、检材、对象、来源及送检情况。"
+    },
+    {
+      "heading": "方法、过程及结果原文",
+      "body": "方法、观察、检测数据及结论应来自实际提供文本，不根据模板补写等级或因果关系。"
+    },
+    {
+      "heading": "签署、限制及附件",
+      "body": "保留机构与人员、签署、适用范围、限制及附件，不把草稿记为正式鉴定意见。"
+    }
+  ]
+}

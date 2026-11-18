@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-electronic-extraction",
+  "template_id": "electronic-extraction",
+  "title": "电子数据提取与来源链",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "carrier": "SYN-DEV-001，示例存储介质",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "提取环境与方法",
+      "body": "填写提取人、时间、地点、工具版本及操作范围。未实施的操作只能记为计划。"
+    },
+    {
+      "heading": "文件与完整性记录",
+      "body": "记录原文件名、路径、大小、实际计算的哈希算法和结果；本模板不将手工输入哈希标为已验证。"
+    },
+    {
+      "heading": "交接与访问",
+      "body": "原件、工作副本、封存、交接和后续访问分别登记。"
+    }
+  ]
+}

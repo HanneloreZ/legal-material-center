@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-disclosure-letter",
+  "template_id": "disclosure-letter",
+  "title": "披露函",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "reference": "SYN-BASE-001，v1讨论稿",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "对应协议及范围",
+      "body": "本披露函对应SYN-BASE-001的v1讨论稿；披露基准日与协议版本分别记录。"
+    },
+    {
+      "heading": "逐项披露",
+      "body": "示例事项DL-001：一项合同尚待补充附件。注明对应陈述保证条款及资料位置，不将披露自动改写为豁免。"
+    },
+    {
+      "heading": "附件与确认",
+      "body": "资料索引、附件、签署及收件确认独立记录，不能从文件名判断已交付或接受。"
+    }
+  ]
+}

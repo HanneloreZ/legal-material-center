@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-work-permit",
+  "template_id": "work-permit",
+  "title": "工作许可与居留资料记载",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employee": "林岑（合成）",
+    "authority": "示例市相关机构（合成）",
+    "documentType": "工作许可信息页",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "证件及持有人",
+      "body": "按实际资料填写证件类型、持有人、编号、许可事项与限制；未提供的识别信息保留空缺。"
+    },
+    {
+      "heading": "日期与状态",
+      "body": "签发、有效期、入境、申请或变更日期分别列明，不推算延期、合法状态或批准结果。"
+    },
+    {
+      "heading": "来源与关联资料",
+      "body": "记录证件来源、查看范围及关联劳动或居留材料。此模板为资料记载页，不仿制真实证件或验真图样。"
+    }
+  ]
+}

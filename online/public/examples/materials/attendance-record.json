@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-attendance-record",
+  "template_id": "attendance-record",
+  "title": "考勤记录说明",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employer": "清岑示例技术有限公司（合成）",
+    "employee": "林岑（合成）",
+    "period": "2026年9月",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "记录来源",
+      "body": "资料由示例考勤系统导出，导出版本SYN-ATT-001。原始记录、人工修订及审批记录分别登记。"
+    },
+    {
+      "heading": "记录内容",
+      "body": "2026-09-18记载上班打卡09:00、下班打卡18:00。该条仅示例原始记载，不直接判断工时、加班或工资。"
+    },
+    {
+      "heading": "异常与确认",
+      "body": "缺卡、补签、跨日及休假记录应逐项列出。员工确认情况与系统导出时间分开记录。"
+    }
+  ]
+}

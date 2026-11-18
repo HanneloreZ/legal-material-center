@@ -92,3 +92,23 @@ python3 tools/collect_workbench.py \
 第一批测试覆盖旧证照/合同、实际 PDF 提取与逐像素版面对比、IndexedDB 恢复、逐份重试、版本保护、交付隔离和安全下载回收。接入线上 Forge 后还应以实际发布版本和资源包 gate 完成整轮联调。
 
 第二批独立示例见 `examples/due-diligence-smoke.batch.json`，38 份文档、44 个文件，用于检验全部新类型，不能直接当作同一案件的完整 Reference。合同与业务文书无内置 PDF 转换；Worker 转换时需具备中文字体，可用 `node tools/prepare-fontconfig.mjs` 生成任务内字体配置。
+
+
+## 文档、图片与原件扩展（1.3.0）
+
+批次协议仍为material-batch/1。新增documents、images、original，分别接收`{document: legal-document/1}`、`{image: legal-image/1}`和`{original: original-document/1}`。从get_capabilities取得目录和限制，从get_template取得完整合成示例；原件须使用真实文件字节，模板接口不制造原件。示例见 `examples/materials-smoke.batch.json` 和 `examples/materials/`。
+
+文书原生输出DOCX、可检索PDF、PNG、SVG。图片可输出PNG、PDF、SVG和内容转录DOCX。原件仅按原格式交付，支持PDF、DOCX、PNG、JPG/JPEG、TXT、MD，每份最多12MB；包含原文件名、大小、SHA256、data_base64和来源声明。PDF原件page_count为null；来源及脱敏声明不代表工作台已验证。
+
+原件source_record随authoring制作记录与文件映射保存，candidate包不混入元数据。collect_workbench.py核对源哈希及实际原字节，保留真实producer=original。新增三条producer路线须先显式扩展后端计划schema、路由及gate，不改标为native或其他既有引擎。现有Pipeline尚未在本次修改中扩展。
+
+
+## 微信截图扩展（1.4.0）
+
+统一入口新增 `/screenshots/`。批次协议仍为 `material-batch/1`，新增真实引擎 `screenshots`，支持 `formats: ["png"]`，payload 为 `{ "project": <Screenshot Legal Studio 1.0 项目> }`。通过 `get_template` 传入 `engine: "screenshots"` 和场景 `reference`、`loan`、`labor`、`sale`、`group` 可取得完整示例。`get_capabilities` 提供实际限制。截图最多100条消息、20名参与人，必须保留一名己方成员；批次输入仍受20MB限制。截图不支持扫描件外观。
+
+在截图编辑器点“送入批量制作”发送当前项目；侧栏“批量”中的“这批送入统一制作”发送导入的 cases 或按当前种子生成的变体。批量制作页也可直接导入原项目JSON、`{project: ...}` 标注包、`{cases: [...]}` 项目列表或项目数组。单项目中的 `reference_id` 用于保留批次及文档身份，修改后沿用既有修订机制。
+
+业务材料包仅含实际PNG。制作记录包包含原有冻结输入、哈希及文件映射，并新增 `截图标注/<document_id>-r<revision>.json`，保留可见消息、最终像素坐标、参与人、头像来源及完整项目；标注中的文件名对应业务包实际路径。截图预览的选中框与标注框不写入PNG。PNG不包含可检索文字层。
+
+`collect_workbench.py` 可按真实哈希回收PNG，保持 `producer=screenshots`。本次接入仅修改本地工作台；云端Reference计划、producer schema、路由和gate仍需单独扩展，不能将截图路线改标为其他引擎。旧独立站点草稿需从原站导出项目JSON，再在本机导入；不同origin的localStorage不会自动迁移。

@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-rectification",
+  "template_id": "rectification",
+  "title": "整改通知与反馈",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "reference": "SYN-BASE-001，v1讨论稿",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "通知事项",
+      "body": "填写通知实际要求、范围、期限和送达情况，不按模板新增未载要求。"
+    },
+    {
+      "heading": "反馈与附件",
+      "body": "示例反馈一项资料已整理、另一项仍待补件。计划、完成及核验状态分别记载。"
+    },
+    {
+      "heading": "复核记载",
+      "body": "复核范围、时间、机构与结果按实际材料填写；未复核不标为验收通过。"
+    }
+  ]
+}

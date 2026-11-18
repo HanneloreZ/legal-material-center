@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-consultancy",
+  "template_id": "consultancy",
+  "title": "顾问服务合同",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employer": "清岑示例技术有限公司（合成）",
+    "employee": "林岑（合成）",
+    "scope": "内部技术资料整理",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "服务内容与交付",
+      "body": "顾问拟整理本项目的技术资料目录并提交月度服务记录。具体成果、验收与工作安排以双方填写文本为准。"
+    },
+    {
+      "heading": "费用与支付",
+      "body": "示例服务费为每月人民币3,000元。发票、税费、支付条件与费用报销另行填写。"
+    },
+    {
+      "heading": "期限与其他约定",
+      "body": "本件记录拟议服务约定。服务关系性质、保密、终止及争议解决条款由双方提供完整文本。"
+    }
+  ]
+}

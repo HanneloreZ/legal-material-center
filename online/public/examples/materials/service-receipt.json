@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-service-receipt",
+  "template_id": "service-receipt",
+  "title": "送达回证与签收记录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "reference": "SYN-BASE-001，v1讨论稿",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "送达对象与文件",
+      "body": "列明收件主体、文件名称、份数、版本和送达方式。"
+    },
+    {
+      "heading": "过程与结果",
+      "body": "示例仅记录一次拟寄送安排，实际寄件、投递、签收、退回或拒收逐项填写。"
+    },
+    {
+      "heading": "证明材料",
+      "body": "快递单、回执、电子回执或在场人记录分别引用，不根据通知拟稿推定送达完成。"
+    }
+  ]
+}

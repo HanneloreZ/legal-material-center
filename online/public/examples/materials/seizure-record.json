@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-seizure-record",
+  "template_id": "seizure-record",
+  "title": "搜查扣押与封存记录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "程序与参加人",
+      "body": "记录文书、执行事项、时间、地点、执行人与在场人，未载明的程序事实不补全。"
+    },
+    {
+      "heading": "物品、载体与封存",
+      "body": "逐项列明名称、数量、编号、持有人及封存标识，交接和启封另行记录。"
+    },
+    {
+      "heading": "签署及附件",
+      "body": "执行记录、清单、照片和签署或拒签情况分别保存。"
+    }
+  ]
+}

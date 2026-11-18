@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-labor-capacity",
+  "template_id": "labor-capacity",
+  "title": "劳动能力鉴定材料",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "employee": "林岑（合成）",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "委托与鉴定对象",
+      "body": "本件为合成鉴定材料结构示例，填写申请或委托事项、受检对象及资料范围。"
+    },
+    {
+      "heading": "检查与结论记载",
+      "body": "检查日期、检查记录和鉴定结论应按实际文书记载，等级或护理需求不由工作台推算。"
+    },
+    {
+      "heading": "签署与送达",
+      "body": "专家组签署状态、出具机构、附件页和送达记录分别保留。"
+    }
+  ]
+}

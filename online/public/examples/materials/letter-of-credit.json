@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-letter-of-credit",
+  "template_id": "letter-of-credit",
+  "title": "信用证与保兑通知",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "instrument": "SYN-LC-001",
+    "currency": "USD 100,000（示例）",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "开立文本与条件",
+      "body": "记录开证人、申请人、受益人、付款方式、装运、交单及单据要求，保留完整条件。"
+    },
+    {
+      "heading": "保兑与修改",
+      "body": "独立记录保兑通知、修改、接受及版本关系，不将拟保兑或修改请求记为已完成。"
+    },
+    {
+      "heading": "提示与状态",
+      "body": "交单、到期、拒付和沟通记录分别引用。本文不仿制银行原始报文或认证标识。"
+    }
+  ]
+}

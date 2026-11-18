@@ -1,0 +1,32 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-equity-plan",
+  "template_id": "equity-plan",
+  "title": "股权激励计划",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "subject": "本件所列合成主体与示例事项",
+    "plan": "2026示例激励计划 v1",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "Purpose and participants 目的与对象",
+      "body": "This synthetic plan records proposed incentive arrangements. 本合成计划记录拟议激励安排，适用对象和批准权限由计划原文确定。"
+    },
+    {
+      "heading": "Awards and vesting 授予与归属",
+      "body": "分别填写工具类型、数量、授予、归属、行权条件、价格及期限；计划总额度不等于实际已授予。"
+    },
+    {
+      "heading": "Leaver provisions 离职条款",
+      "body": "分别保留离职情形、通知、未归属及已归属权益的实际约定，不自动推定失效或可回购。"
+    },
+    {
+      "heading": "Approval and amendments 批准与变更",
+      "body": "计划批准、修改、终止及关联授予文件的版本分别记载。"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-equipment-inspection",
+  "template_id": "equipment-inspection",
+  "title": "设备登记与检验报告",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "equipment": "SYN-EQ-001，示例设备A",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "设备登记",
+      "body": "设备名称、序列号、使用单位、地点及登记编号由资料输入。"
+    },
+    {
+      "heading": "检验项目与结果原文",
+      "body": "检验时间、范围、方法、项目结果及结论原文分别填写。未做检验不生成合格结论。"
+    },
+    {
+      "heading": "签署及附件",
+      "body": "保留检验人员、审核人、机构和签署状态；登记证与检验报告不得混同。"
+    }
+  ]
+}

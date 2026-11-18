@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-shareholders-agreement",
+  "template_id": "shareholders-agreement",
+  "title": "股东协议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "reference": "SYN-BASE-001，v1讨论稿",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "持股与治理",
+      "body": "填写股东、持股、董事席位、表决与保留事项；与公司章程及其他轮次协议的关系分别注明。"
+    },
+    {
+      "heading": "股东权利与退出",
+      "body": "优先权、转让、退出及限制应根据完整原文逐项填写，不自动沿用其他轮次条款。"
+    },
+    {
+      "heading": "替代与签署",
+      "body": "明确替代或保留的历史协议、版本和签署状态。未载明的条款不自动删除或补写。"
+    }
+  ]
+}

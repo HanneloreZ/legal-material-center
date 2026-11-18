@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-employee-noncompete",
+  "template_id": "employee-noncompete",
+  "title": "竞业限制协议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employer": "清岑示例技术有限公司（合成）",
+    "employee": "林岑（合成）",
+    "scope": "示例产品A；具体范围待双方填写",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "涉及信息与人员范围",
+      "body": "示例记录该岗位可能接触的产品A技术资料；实际接触情况和限制依据分别填写。"
+    },
+    {
+      "heading": "期限、地域与业务范围",
+      "body": "期限、地域、竞争业务及例外应由完整协议明确填写。未填写不代表不限期限、地域或业务。"
+    },
+    {
+      "heading": "补偿、履行与终止",
+      "body": "补偿标准、支付情况、报告方式、解除或终止条件及责任条款由协议提供。当前为未签署稿。"
+    }
+  ]
+}

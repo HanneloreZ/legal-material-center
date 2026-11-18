@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-insurance-document",
+  "template_id": "insurance-document",
+  "title": "保险单据与理赔往来",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "instrument": "SYN-POL-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "保险记载",
+      "body": "填写保险人、被保险人、标的、期间、险种、金额及特别约定。"
+    },
+    {
+      "heading": "事故、报案与处理",
+      "body": "事故、通知、报案、资料补交、核定和付款分别记载；报案不等于承保确认。"
+    },
+    {
+      "heading": "条款与附件",
+      "body": "按实际条款记录承保、除外、免赔及争议内容，摘要不替代完整保单。"
+    }
+  ]
+}

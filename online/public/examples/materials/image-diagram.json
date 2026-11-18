@@ -1,0 +1,53 @@
+{
+  "schema_version": "legal-image/1",
+  "id": "example-image-diagram",
+  "kind": "diagram",
+  "title": "示例流程与排水路径",
+  "data": {
+    "nodes": [
+      {
+        "id": "A",
+        "label": "甲工序"
+      },
+      {
+        "id": "B",
+        "label": "中间储罐"
+      },
+      {
+        "id": "C",
+        "label": "处理设施"
+      },
+      {
+        "id": "D",
+        "label": "采样点甲"
+      },
+      {
+        "id": "E",
+        "label": "示例排口"
+      }
+    ],
+    "edges": [
+      {
+        "from": "A",
+        "to": "B",
+        "label": "输送"
+      },
+      {
+        "from": "B",
+        "to": "C",
+        "label": "进入处理"
+      },
+      {
+        "from": "C",
+        "to": "D",
+        "label": "采样路径"
+      },
+      {
+        "from": "D",
+        "to": "E",
+        "label": "排放路径"
+      }
+    ],
+    "note": "合成示意图。节点与连线仅按输入关系展示；不代表实际测绘比例、管线方向或检测结论。"
+  }
+}

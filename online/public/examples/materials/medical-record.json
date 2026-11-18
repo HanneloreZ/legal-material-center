@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-medical-record",
+  "template_id": "medical-record",
+  "title": "诊疗与护理记录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "patient": "林岑（合成）",
+    "authority": "示例市相关机构（合成）",
+    "period": "2026-09-18至2026-09-20",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "就诊与病历记载",
+      "body": "记录机构、科室、就诊时间、病历号及实际病历原文，诊断不得由工作台推断。"
+    },
+    {
+      "heading": "治疗、护理与医嘱",
+      "body": "治疗、休息、复查及护理建议按原文填写；建议、实际执行和费用分开记录。"
+    },
+    {
+      "heading": "资料来源及附件",
+      "body": "病历、处方、票据和检查资料分别引用，不用合成模板替代真实临床诊断。"
+    }
+  ]
+}

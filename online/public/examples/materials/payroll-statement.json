@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-payroll-statement",
+  "template_id": "payroll-statement",
+  "title": "工资支付与代扣说明",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "employer": "清岑示例技术有限公司（合成）",
+    "employee": "林岑（合成）",
+    "period": "2026年9月",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "工资构成",
+      "body": "示例应发基础工资为人民币6,000元；其他项目须按实际工资记录分别列明。本文不生成公式工作簿。"
+    },
+    {
+      "heading": "支付与代扣记载",
+      "body": "示例个人代扣600元、银行净入账5,400元。款项性质、所属期间与实际到账日分别记录。"
+    },
+    {
+      "heading": "核对与待补资料",
+      "body": "工资表、银行回单及代扣凭证分别引用；未提供的材料记为未提供，不以零金额替代。"
+    }
+  ]
+}

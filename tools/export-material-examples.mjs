@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import {documentTemplates,imageTemplates} from '../online/materials/catalog.js';
+import {exampleDocument} from '../online/materials/documents.js';
+import {exampleImage} from '../online/materials/images.js';
+import {materialsDemo} from '../online/materials/demo.js';
+const out=new URL('../online/public/examples/materials/',import.meta.url);
+await fs.mkdir(out,{recursive:true});
+for(const t of documentTemplates)await fs.writeFile(new URL(t.id+'.json',out),JSON.stringify(exampleDocument(t.id),null,2)+'\n');
+for(const t of imageTemplates)await fs.writeFile(new URL('image-'+t.id+'.json',out),JSON.stringify(exampleImage(t.id),null,2)+'\n');
+await fs.writeFile(new URL('../online/public/examples/materials-smoke.batch.json',import.meta.url),JSON.stringify(await materialsDemo(),null,2)+'\n');

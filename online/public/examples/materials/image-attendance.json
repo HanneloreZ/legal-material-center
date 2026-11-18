@@ -1,0 +1,26 @@
+{
+  "schema_version": "legal-image/1",
+  "id": "example-image-attendance",
+  "kind": "attendance",
+  "title": "林岑打卡记录",
+  "data": {
+    "system": "示例考勤",
+    "person": "林岑（合成）",
+    "events": [
+      {
+        "date": "2026-09-18",
+        "time": "09:00",
+        "action": "上班打卡",
+        "place": "示例市甲办公点",
+        "status": "打卡成功"
+      },
+      {
+        "date": "2026-09-18",
+        "time": "18:00",
+        "action": "下班打卡",
+        "place": "示例市甲办公点",
+        "status": "打卡成功"
+      }
+    ]
+  }
+}

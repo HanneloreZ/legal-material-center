@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-bill-of-lading",
+  "template_id": "bill-of-lading",
+  "title": "提单及正本交接记录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "instrument": "SYN-BL-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "运输与货物",
+      "body": "填写承运人、托运人、收货人、通知方、港口、船名航次和货物记载。"
+    },
+    {
+      "heading": "正本、背书与交接",
+      "body": "正本份数、背书、持有人、交接、退回及副本分开记录。"
+    },
+    {
+      "heading": "条款与附件",
+      "body": "保留实际提单条款及附注；只有摘要时不生成不存在的背面条款。"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-ip-license",
+  "template_id": "ip-license",
+  "title": "知识产权许可协议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "right": "示例软件SYN-SW-A",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "标的与范围",
+      "body": "列明权利标的、许可类型、地域、期限、用途、转许可及限制。"
+    },
+    {
+      "heading": "费用、交付与保证",
+      "body": "按实际协议填写费用、交付、保证及责任范围，权属资料与合同陈述分别保留。"
+    },
+    {
+      "heading": "终止、争议及签署",
+      "body": "保留终止、后续处理、适用规则及签署全文，不从模板推定权属或有效性。"
+    }
+  ]
+}

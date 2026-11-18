@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-term-sheet",
+  "template_id": "term-sheet",
+  "title": "交易条款清单 Term Sheet",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "transaction": "收购示例公司部分股权",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "Transaction and consideration 交易与对价",
+      "body": "The parties are discussing a proposed acquisition. 该文本用于记录拟议交易范围、股份和对价；具体数值及币种由双方填写。"
+    },
+    {
+      "heading": "Conditions and process 条件与流程",
+      "body": "Due diligence, approvals and definitive documents remain to be recorded. 尽调、审批、签署及交割分别记载，不从讨论稿推定完成。"
+    },
+    {
+      "heading": "Binding provisions 约束性条款",
+      "body": "填写文件对保密、费用、排他、适用法等条款是否具有约束力的实际约定，不以文件标题替代条款。"
+    }
+  ]
+}

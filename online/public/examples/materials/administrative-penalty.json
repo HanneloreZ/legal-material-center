@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-administrative-penalty",
+  "template_id": "administrative-penalty",
+  "title": "行政处罚决定书",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "当事人及调查事实",
+      "body": "示例案号SYN-CASE-2026-001。按文书记载填写主体、调查事实及证据，不从模板自动补写违法结论。"
+    },
+    {
+      "heading": "理由、依据与处理原文",
+      "body": "填写实际决定的理由、规范引用、处罚项目、金额和执行要求。模板不提供默认法律依据或处罚计算。"
+    },
+    {
+      "heading": "告知、送达与附件",
+      "body": "救济告知按原文输入。决定日期、送达日期及签收状态分别记录。"
+    }
+  ]
+}

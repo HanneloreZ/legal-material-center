@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-procedural-notice",
+  "template_id": "procedural-notice",
+  "title": "程序通知与裁判记载",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "文书类型及事项",
+      "body": "填写受理、开庭、裁定或其他实际文书类型；仅以本件内容判断记录范围。"
+    },
+    {
+      "heading": "正文与结果原文",
+      "body": "完整保留程序安排或裁判原文及限定条件，不把申请、拟稿与最终裁判混同。"
+    },
+    {
+      "heading": "日期、送达与附件",
+      "body": "出具日、送达日、收件人及附件分别记录，期限不自动计算。"
+    }
+  ]
+}

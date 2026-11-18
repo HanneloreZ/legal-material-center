@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-customs-declaration",
+  "template_id": "customs-declaration",
+  "title": "报关资料记载",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "instrument": "SYN-CUS-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "申报主体与货物",
+      "body": "分别记录主体、商品名称、规格、数量、单位、价值、币种和申报事项。"
+    },
+    {
+      "heading": "单据及处理状态",
+      "body": "申报、受理、查验、放行或补正逐项按原文记录，不推定已完成。"
+    },
+    {
+      "heading": "版本与来源",
+      "body": "关联合同、发票、装箱及运输单据，保留版本和资料来源；不仿造可验真的报关原件。"
+    }
+  ]
+}

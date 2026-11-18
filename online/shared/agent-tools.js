@@ -6,7 +6,7 @@ export function registerAgentTools(context,actions,onError=()=>{}) {
   const define=(name,title,inputSchema,execute,readOnly=false)=>({name,title,description:title+'。使用当前工作台的真实输入、制件结果或已保存文件；不代表Forge已回收或批准。',inputSchema,execute,annotations:{readOnlyHint:readOnly,untrustedContentHint:true}});
   const tools=[
     define('get_capabilities','读取实际制件能力',empty,()=>capabilities(),true),
-    define('get_template','读取模板与完整示例',{type:'object',properties:{engine:{type:'string',enum:['finance','rights','contracts','certificates','business']},template_id:{type:'string'}},required:['engine'],additionalProperties:false},input=>templateExample(input.engine,input.template_id),true),
+    define('get_template','读取模板与完整示例',{type:'object',properties:{engine:{type:'string',enum:['finance','rights','contracts','certificates','business','documents','images','original','screenshots']},template_id:{type:'string'}},required:['engine'],additionalProperties:false},input=>templateExample(input.engine,input.template_id),true),
     define('validate_batch','检查批次输入',batchInputSchema,async input=>({issues:await validateRequest(input)}),true),
     define('stage_batch','保存批次草稿',batchInputSchema,actions.stage),
     define('render_batch','逐份制作并保存文件',batchId,input=>actions.run(input.batch_id)),

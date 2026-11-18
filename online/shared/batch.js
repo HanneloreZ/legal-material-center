@@ -1,7 +1,7 @@
 export const BATCH_SCHEMA = 'material-batch/1';
-export const RENDER_VERSION = 'material-render/1.2.4';
-export const ENGINES = ['finance','rights','contracts','certificates','business'];
-export const ENGINE_FORMATS={finance:['pdf','png','svg','xlsx','csv'],rights:['pdf','png','svg'],contracts:['docx'],certificates:['pdf','png','svg'],business:['docx','xlsx','csv']};
+export const RENDER_VERSION = 'material-render/1.3.0';
+export const ENGINES = ['finance','rights','contracts','certificates','business','documents','images','original','screenshots'];
+export const ENGINE_FORMATS={screenshots:['png'],finance:['pdf','png','svg','xlsx','csv'],rights:['pdf','png','svg'],contracts:['docx'],certificates:['pdf','png','svg'],business:['docx','xlsx','csv'],documents:['docx','pdf','png','svg'],images:['pdf','png','svg','docx'],original:['pdf','docx','png','jpg','jpeg','txt','md']};
 const copy = value => structuredClone(value);
 export function canonical(value) {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -31,7 +31,7 @@ export function validateBatch(request) {
     if (!ENGINES.includes(doc.engine)) issue('材料引擎无效');
     if (!Number.isSafeInteger(doc.revision) || doc.revision < 1) issue('revision需为正整数');
     if (typeof doc.title !== 'string' || !doc.title.trim() || doc.title.length > 150) issue('文档标题需为1至150字');
-    if (!Array.isArray(doc.formats) || !doc.formats.length || new Set(doc.formats).size !== doc.formats.length || doc.formats.some(x => !['pdf','docx','png','svg','xlsx','csv'].includes(x))) issue('输出格式无效或重复');
+    if (!Array.isArray(doc.formats) || !doc.formats.length || new Set(doc.formats).size !== doc.formats.length || doc.formats.some(x => !['pdf','docx','png','svg','xlsx','csv','jpg','jpeg','txt','md'].includes(x))) issue('输出格式无效或重复');
     else if (doc.formats.some(x=>!ENGINE_FORMATS[doc.engine]?.includes(x))) issue('输出格式与材料引擎不匹配');
     if (!doc.payload || typeof doc.payload !== 'object' || Array.isArray(doc.payload)) issue('缺少结构化payload');
     if (doc.pdf_mode !== undefined && !['searchable','image'].includes(doc.pdf_mode)) issue('pdf_mode需为searchable或image');
@@ -46,7 +46,8 @@ export async function inspectArtifact(file,doc) {
   if(file.format==='pdf') {
     const text=new TextDecoder().decode(prefix),tail=await file.blob.slice(-2048).text();
     if(!text.startsWith('%PDF-') || !tail.includes('%%EOF'))throw Error('生成的PDF缺少有效文件头或结束标记');
-    if(!Number.isInteger(file.page_count) || file.page_count<1)throw Error('PDF缺少有效页数');
+    if(doc.engine!=='original' && (!Number.isInteger(file.page_count) || file.page_count<1))throw Error('PDF缺少有效页数');
+    if(doc.engine==='original' && file.page_count!==null)throw Error('原件PDF未经页数核验，page_count须为null');
   } else if(file.format==='png') {
     if(![137,80,78,71,13,10,26,10].every((b,i)=>prefix[i]===b))throw Error('生成的PNG格式不正确');
   } else if(file.format==='svg') {
@@ -54,6 +55,10 @@ export async function inspectArtifact(file,doc) {
   } else if(['docx','xlsx'].includes(file.format)) {
     const {default:JSZip}=await import('jszip'),zip=await JSZip.loadAsync(await file.blob.arrayBuffer());
     if(!zip.file(file.format==='docx'?'word/document.xml':'xl/workbook.xml') || !zip.file('[Content_Types].xml'))throw Error('生成的Office文件缺少必要内容');
+  } else if(['jpg','jpeg'].includes(file.format)) {
+    if(!(prefix[0]===255&&prefix[1]===216&&prefix[2]===255))throw Error('JPEG文件头不正确');
+  } else if(['txt','md'].includes(file.format)) {
+    if(doc.engine!=='original')throw Error('文本原件不应经其他引擎重新生成');
   } else if(file.format==='csv') {
     new TextDecoder('utf-8',{fatal:true}).decode(await file.blob.arrayBuffer());
   }
@@ -72,9 +77,9 @@ export function deliveryMap(batch) {
   const used=new Set();
   return batch.documents.flatMap(doc=>(doc.artifacts || []).map(file=>{
     let stem=doc.title.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,85) || '业务材料';
-    if(['png','svg'].includes(file.format))stem+='_第'+(Number(file.path.match(/_p(\d+)\./)?.[1]) || 1)+'页';
+    if(doc.engine!=='original'&&['png','svg'].includes(file.format))stem+='_第'+(Number(file.path.match(/_p(\d+)\./)?.[1]) || 1)+'页';
     let path=`Reference/${stem}.${file.format}`,n=1;while(used.has(path))path=`Reference/${stem}（${++n}）.${file.format}`;used.add(path);
-    return {artifact_id:file.artifact_id,document_id:doc.document_id,business_document:true,producer:doc.engine,format:file.format,sha256:file.sha256,bytes:file.bytes,page_count:file.page_count,path,source_path:file.path,origin:file.origin ?? null,transformation:'identity'};
+    return {artifact_id:file.artifact_id,document_id:doc.document_id,business_document:true,producer:doc.engine,format:file.format,sha256:file.sha256,bytes:file.bytes,page_count:file.page_count,path,source_path:file.path,origin:file.origin ?? null,transformation:'identity',...(file.source_record?{source_record:file.source_record}:{})};
   }));
 }
 export class MemoryStore {
@@ -170,6 +175,11 @@ export class BatchRunner {
     } else {
       zip.file('制作记录.json',JSON.stringify(publicBatch(batch),null,2));
       zip.file('文件映射.json',JSON.stringify({schema_version:BATCH_SCHEMA,batch_id:batch.batch_id,status:summary.status,artifacts:mapping},null,2));
+      for(const doc of batch.documents)for(const file of doc.artifacts||[])if(doc.engine==='screenshots'&&file.screenshot_annotation){
+        const path=mapping.find(m=>m.artifact_id===file.artifact_id).path;
+        const annotation={...file.screenshot_annotation,image:{...file.screenshot_annotation.image,filename:path},rect_attrs:file.screenshot_annotation.rect_attrs.map(rect=>({...rect,image_tail:path.split('/').at(-1)}))};
+        zip.file(`截图标注/${doc.document_id}-r${doc.revision}.json`,JSON.stringify(annotation,null,2));
+      }
       zip.file('冻结输入.json',JSON.stringify({schema_version:BATCH_SCHEMA,batch_id:batch.batch_id,name:batch.name,documents:batch.documents.map(({input_digest,status,attempts,artifacts,error,...doc})=>doc)},null,2));
       const {observedFinancialLedgers}=await import('./finance-data.js');
       zip.file('observed_financial_ledgers.json',JSON.stringify(await observedFinancialLedgers(batch),null,2));

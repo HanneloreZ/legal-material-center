@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-trademark-transfer",
+  "template_id": "trademark-transfer",
+  "title": "商标转让资料记载",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "right": "示例商标SYN-TM-001，第9类",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "权利与转让范围",
+      "body": "分别填写转让人、受让人、商标标识、类别和商品服务范围。"
+    },
+    {
+      "heading": "交易与登记",
+      "body": "协议签署、申请、受理、核准及登记日期分别记录；名称地址变更不代替权利转移。"
+    },
+    {
+      "heading": "来源及附件",
+      "body": "按实际提供材料填写登记机关与凭证。缺少原件或底图时只生成记载页，不冒充核准证明。"
+    }
+  ]
+}

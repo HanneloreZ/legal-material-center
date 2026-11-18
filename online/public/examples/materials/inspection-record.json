@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-inspection-record",
+  "template_id": "inspection-record",
+  "title": "现场检查与调查笔录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "place": "示例市甲场所",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "参加人与时间",
+      "body": "示例检查起止为2026-09-18 09:00至10:00；检查人、见证人与在场人身份按记录填写。"
+    },
+    {
+      "heading": "检查过程与记录",
+      "body": "逐项记录所见、陈述、抽样和调取材料。事实观察、当事人陈述与后续判断分别填写。"
+    },
+    {
+      "heading": "核对、签名及附件",
+      "body": "记录修改、补充、确认或拒签情况。照片、抽样清单及载体引用独立登记。"
+    }
+  ]
+}

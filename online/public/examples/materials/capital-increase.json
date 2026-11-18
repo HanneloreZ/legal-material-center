@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-capital-increase",
+  "template_id": "capital-increase",
+  "title": "增资协议",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "round": "示例轮次A",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "认购与价款",
+      "body": "本件记录拟新增注册资本、认购价款、币种、支付对象及期限。各项数值由完整交易文本提供。"
+    },
+    {
+      "heading": "条件与交割",
+      "body": "签署条件、先决条件、豁免、付款与工商登记应分别填写。当前示例未记载已交割。"
+    },
+    {
+      "heading": "陈述保证与其他约定",
+      "body": "保留完整陈述保证、披露、责任限制、终止和争议解决条款；关联披露函注明对应版本。"
+    }
+  ]
+}

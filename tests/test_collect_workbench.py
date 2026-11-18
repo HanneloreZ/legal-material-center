@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -30,7 +31,7 @@ class CollectionTests(unittest.TestCase):
         with zipfile.ZipFile(self.business,'w') as z:
             z.writestr(self.item['path'],self.data)
             if extra: z.writestr(extra,b'private')
-        report = {'batch_id':'test','status':'succeeded','documents':[{'document_id':'D001','status':'succeeded','engine':'finance',
+        report = {'batch_id':'test','status':'succeeded','documents':[{'document_id':'D001','status':'succeeded','engine':self.item['producer'],
                   'input_digest':'real-input-digest','artifacts':[self.item]}]}
         mapping = {'schema_version':'material-batch/1','batch_id':'test','artifacts':[self.item]}
         with zipfile.ZipFile(self.authoring,'w') as z:
@@ -86,6 +87,44 @@ class CollectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'符号链接'):
             collector.collect(self.business,self.authoring,self.output)
         self.assertFalse((actual/'candidate').exists())
+
+    def test_original_text_preserves_encoding_and_declared_source(self):
+        self.data = b'\xc4\xe3\xba\xc3\r\n'
+        self.item.update(producer='original', format='txt', path='Reference/原始记录.txt',
+                         sha256=collector.sha(self.data), bytes=len(self.data))
+        self.item['source_record'] = {'kind':'unknown', 'redaction':'not_checked',
+                                     'sha256':self.item['sha256'], 'bytes':len(self.data),
+                                     'filename':'原始记录.txt', 'redaction_verified_by_workbench':False}
+        self.write_packages()
+        result = collector.collect(self.business,self.authoring,self.output)
+        self.assertEqual((self.output/'candidate/原始记录.txt').read_bytes(),self.data)
+        self.assertEqual(result['artifacts'][0]['source_record'],self.item['source_record'])
+
+    def test_original_source_claim_cannot_replace_byte_verification(self):
+        self.item.update(producer='original')
+        self.item['source_record'] = {'sha256':'0'*64, 'bytes':len(self.data),
+                                     'redaction_verified_by_workbench':False}
+        self.write_packages()
+        with self.assertRaisesRegex(ValueError,'来源记录'):
+            collector.collect(self.business,self.authoring,self.output)
+        self.assertFalse((self.output/'candidate').exists())
+
+    def test_web_hyperlinks_are_preserved_only_for_original_office(self):
+        def office(target, relation='hyperlink'):
+            b=io.BytesIO()
+            with zipfile.ZipFile(b,'w') as z:
+                z.writestr('word/_rels/document.xml.rels',
+                           '<Relationships><Relationship TargetMode="External" '
+                           f'Type="http://example/{relation}" Target="{target}"/></Relationships>')
+            return b.getvalue()
+        data=office('https://example.invalid/source')
+        with self.assertRaisesRegex(ValueError,'外部链接'):
+            collector.inspect_office(data)
+        collector.inspect_office(data,allow_hyperlinks=True)
+        with self.assertRaisesRegex(ValueError,'外部链接'):
+            collector.inspect_office(office('https://example.invalid/t','attachedTemplate'),allow_hyperlinks=True)
+        with self.assertRaisesRegex(ValueError,'外部链接'):
+            collector.inspect_office(office('file:///private/source'),allow_hyperlinks=True)
 
 
 if __name__ == '__main__':

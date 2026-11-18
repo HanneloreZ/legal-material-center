@@ -1,0 +1,29 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-accident-investigation",
+  "template_id": "accident-investigation",
+  "title": "事故调查与监测记录",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "authority": "示例市相关机构（合成）",
+    "subject": "本件所列合成主体与示例事项",
+    "place": "示例园区甲点位",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "事件与时间线",
+      "body": "分别记录报告、发现、处置与调查时间，保留来源和待核事项。"
+    },
+    {
+      "heading": "现场与监测",
+      "body": "按点位记录采样、方法、设备、单位和结果原文；未测数据不自动填零。"
+    },
+    {
+      "heading": "图示、附件及确认",
+      "body": "现场照片、监测原始记录、工艺和空间示意图分别引用；图示不替代测绘或检验结果。"
+    }
+  ]
+}

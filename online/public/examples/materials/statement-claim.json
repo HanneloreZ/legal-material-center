@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-statement-claim",
+  "template_id": "statement-claim",
+  "title": "起诉状",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "caseNo": "SYN-CASE-2026-001",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "诉讼请求",
+      "body": "逐项填写委托人拟提出的请求、金额、期间及对象，保留暂计或待核范围。"
+    },
+    {
+      "heading": "事实与理由",
+      "body": "按所提交文本填写事实、证据引用及理由。模板不自行补造事实或法源。"
+    },
+    {
+      "heading": "提交与附件",
+      "body": "受理机构、提交日、附件和签署状态分别记录；拟提交不记为已提交。"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "legal-document/1",
+  "id": "example-option-award",
+  "template_id": "option-award",
+  "title": "期权授予契约 Option Award Deed",
+  "fields": {
+    "number": "SYN-2026-001",
+    "issuer": "清岑示例机构（合成）",
+    "date": "2026-09-18",
+    "parties": "甲方：清岑示例公司；乙方：沐序示例公司（均为合成主体）",
+    "plan": "2026示例激励计划 v1",
+    "status": "示例草稿，未签署"
+  },
+  "sections": [
+    {
+      "heading": "Grant 授予",
+      "body": "Award date: to be recorded. Number and exercise price: to be supplied. 授予日、数量、币种及行权价由实际契约填写。"
+    },
+    {
+      "heading": "Vesting and exercise 归属与行权",
+      "body": "Vesting schedule and conditions are recorded separately. 归属、行权、窗口和届满条款分别记录，不从时间经过自动推算归属。"
+    },
+    {
+      "heading": "Execution 签署",
+      "body": "Company signatory: ________; Participant: ________. 公司与激励对象签署及实际签署日期分别保留。"
+    }
+  ]
+}
