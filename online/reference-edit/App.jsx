@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {analyzePdf, editPdf, emptyPlan} from './edit.js';
 import {buildMixedFontPdf} from './fixture.js';
-import {FONT_CHOICES, SCOPES, fontUrls, loadEditorFonts} from './fonts.js';
+import {FONT_CHOICES, SCOPES, fontUrls, loadEditorFonts, SIGNATURE_FONTS, resolveSignatureFont} from './fonts.js';
 import {editZip, entryBytes, readZip} from './zip.js';
 
 const base = import.meta.env.BASE_URL;
@@ -137,7 +137,7 @@ export default function App({pdfjs}) {
   }
   function addSignature(extra) {
     const id = crypto.randomUUID();
-    updatePlan({marks: [...item.plan.marks, {id, kind: 'signature', source: 'generated', name: '赵六', page, widthPt: 120, xRatio: .7, yRatio: .86, opacity: 1, ...extra}]});
+    updatePlan({marks: [...item.plan.marks, {id, kind: 'signature', source: 'generated', font: 'xiaolai', name: '赵六', page, widthPt: 120, xRatio: .7, yRatio: .86, opacity: 1, ...extra}]});
   }
   function placeAt(event) {
     if (!item || busy) return;
@@ -179,11 +179,11 @@ export default function App({pdfjs}) {
       <section className="ink-panel"><h3>个人模拟签名</h3>
         <div className="ink-actions"><button onClick={() => addSignature()}>用姓名生成</button><button onClick={() => signFile.current.click()}>上传授权图片</button><button disabled={!item.plan.marks.length} onClick={() => updatePlan({marks: item.plan.marks.slice(0, -1)})}>撤销上一项</button></div>
         <input ref={signFile} hidden type="file" accept="image/png" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; perform(async () => { if (!file) return; addSignature({source: 'upload', png: new Uint8Array(await file.arrayBuffer()), name: ''}); }); }}/>
-        <p className="source-note">姓名签名使用马善政行书，同一姓名字形稳定。上传图片只原样放置，不会按照片临摹笔迹。默认不签名。</p>
+        <p className="source-note">姓名签名从五款普通硬笔里选，同一姓名同一字体字形稳定。这不是连续签名，也不临摹笔迹。上传图片只原样放置。默认不签名。缺字会停下列出。</p>
       </section>
       <ul className="mark-list">{item.plan.marks.map(mark => <li key={mark.id}><span>{mark.kind === 'signature' ? `签名 ${mark.name || '图片'}` : mark.mode === 'perforation' ? '骑缝章' : mark.sample ? `样本章 ${mark.label || ''}` : '授权章'}</span><button onClick={() => updatePlan({marks: item.plan.marks.filter(item => item.id !== mark.id)})}>删除</button></li>)}{!item.plan.marks.length && <li className="muted">还没有章或签名</li>}</ul>
       {item.plan.marks.filter(mark => mark.kind === 'seal' && mark.sample).map(mark => <label key={mark.id}>样本章主体<input value={mark.label || ''} maxLength={40} onChange={event => updatePlan({marks: item.plan.marks.map(item => item.id === mark.id ? {...item, label: event.target.value} : item)})}/></label>)}
-      {item.plan.marks.filter(mark => mark.kind === 'signature' && mark.source !== 'upload').map(mark => <label key={mark.id}>签名姓名<input value={mark.name || ''} maxLength={12} onChange={event => updatePlan({marks: item.plan.marks.map(item => item.id === mark.id ? {...item, name: event.target.value} : item)})}/></label>)}
+      {item.plan.marks.filter(mark => mark.kind === 'signature' && mark.source !== 'upload').map(mark => <div key={mark.id}><label>硬笔字体<select aria-label="硬笔字体" value={resolveSignatureFont(mark.font)} onChange={event => updatePlan({marks: item.plan.marks.map(item => item.id === mark.id ? {...item, font: event.target.value} : item)})}>{SIGNATURE_FONTS.map(font => <option key={font.id} value={font.id}>{font.label}</option>)}</select></label><label>签名姓名<input value={mark.name || ''} maxLength={12} onChange={event => updatePlan({marks: item.plan.marks.map(item => item.id === mark.id ? {...item, name: event.target.value} : item)})}/></label><p className="source-note">{SIGNATURE_FONTS.find(font => font.id === resolveSignatureFont(mark.font))?.note} 缺字会停止，不会生成缺字签名。OFL 1.1，子集未覆盖的字不算可用。</p></div>)}
       <button className="primary" onClick={() => perform(previewEdit)}>预览修订</button>
       <button onClick={() => perform(exportFile)}>{doc.kind === 'zip' ? '导出新ZIP' : '导出新PDF'}</button>
     </fieldset>

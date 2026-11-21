@@ -1,5 +1,6 @@
 import {digest,BATCH_SCHEMA} from '../shared/batch.js';
 import {SEAL_KINDS,SEAL_TEXTURES,cleanSealText} from '../shared/seal.js';
+import {prepareSealAsset} from './seal-asset.js';
 import {HAND_FONTS,loadHandFont,missingGlyphs} from '../shared/font-policy.js';
 import {originalFromFile,prepareOriginal} from '../materials/originals.js';
 
@@ -31,6 +32,7 @@ export async function prepareScan(doc){
   if(!Array.isArray(doc.formats)||!doc.formats.length||new Set(doc.formats).size!==doc.formats.length||doc.formats.some(f=>!['pdf','png','jpg'].includes(f)))throw Error('扫描件支持PDF、PNG和JPG');
   if(doc.pdf_mode==='searchable')throw Error('扫描PDF为图像版，不保留隐藏文字层');
   const settings=cleanSettings(model.settings),marks=cleanMarks(model.marks||[]),seal=cleanSeal(model.seal),signature=cleanSignature(model.signature),prepared=await prepareOriginal(model.source);
+  if(seal?.source==='png')await prepareSealAsset(seal);
   if(signature.enabled){const missing=missingGlyphs(await loadHandFont(signature.font),signature.name);if(missing.length)throw Error(`这款手写字体没有这些字，已停止，不会把缺字当成已签名：${missing.join('')}`);}
   if(!['pdf','docx','png','jpg','jpeg'].includes(model.source.file.format))throw Error('扫描来源格式不支持');
   if(prepared.inspection.tracked_insertions||prepared.inspection.tracked_deletions)throw Error('Word含未处理修订，请先在Word确认修订显示并导出PDF');
@@ -52,12 +54,37 @@ export async function scanRequest(model,{formats=['pdf'],batch_id}={}){
   await prepareScan(doc);
   return {schema_version:BATCH_SCHEMA,batch_id:batch_id||id,name:model.title,documents:[doc]};
 }
+function ranged(value,fallback,lo,hi,label){
+  const n=value==null||value===''?fallback:Number(value);
+  if(!Number.isFinite(n)||n<lo||n>hi)throw Error(`${label}超出允许范围`);
+  return n;
+}
 export function cleanSeal(seal){
   if(seal==null)return null;
   if(!seal||typeof seal!=='object'||seal.enabled!==true)return {enabled:false};
   if(!SEAL_KINDS.some(item=>item.id===seal.kind)||!SEAL_TEXTURES.some(item=>item.id===seal.texture))throw Error('章型或质感无效');
   if(seal.mode&&!['stamp','perforation'].includes(seal.mode))throw Error('盖印方式无效');
-  return {enabled:true,kind:seal.kind,texture:seal.texture,mode:seal.mode||'stamp',company:cleanSealText(seal.company||'苍澜示意科技有限公司','章面主体'),person:seal.person?cleanSealText(seal.person,'姓名'):'沈予安',edge:seal.edge==='left'?'left':'right',yRatio:Number.isFinite(seal.yRatio)?seal.yRatio:.55,topSpan:seal.topSpan||[-200,20],bottomSpan:seal.bottomSpan||[130,50],topTracking:seal.topTracking||1.06,bottomTracking:seal.bottomTracking||1.08};
+  const source=seal.source==='png'?'png':'generated';
+  const oval=seal.kind==='oval_contract';
+  const arc={
+    topStart:ranged(seal.topStart??seal.topSpan?.[0],-200,-360,360,'上弧起点'),
+    topEnd:ranged(seal.topEnd??seal.topSpan?.[1],20,-360,360,'上弧终点'),
+    bottomStart:ranged(seal.bottomStart??seal.bottomSpan?.[0],130,-360,360,'下弧起点'),
+    bottomEnd:ranged(seal.bottomEnd??seal.bottomSpan?.[1],50,-360,360,'下弧终点'),
+    topTracking:ranged(seal.topTracking,1.06,.6,2.2,'上弧字距'),
+    bottomTracking:ranged(seal.bottomTracking,1.08,.6,2.2,'下弧字距'),
+    topInset:ranged(seal.topInset,28,6,110,'上弧半径'),
+    bottomInset:ranged(seal.bottomInset,oval?48:34,6,130,'下弧半径'),
+  };
+  const company=String(seal.company||'苍澜示意科技有限公司');
+  const next={enabled:true,kind:seal.kind,texture:seal.texture,mode:seal.mode||'stamp',source,company:cleanSealText(company,'章面主体'),person:seal.person?cleanSealText(seal.person,'姓名'):'沈予安',edge:seal.edge==='left'?'left':'right',xRatio:ranged(seal.xRatio,.72,0,1,'横向位置'),yRatio:ranged(seal.yRatio,.55,0,1,'纵向位置'),scale:ranged(seal.scale,.2,.08,.46,'章的大小'),opacity:ranged(seal.opacity,.92,.15,1,'透明度'),...arc,topSpan:[arc.topStart,arc.topEnd],bottomSpan:[arc.bottomStart,arc.bottomEnd]};
+  if(source==='png'){
+    if(seal.authorized!==true)throw Error('上传章图前需确认已获授权。未授权的图片不会盖上。');
+    const png=String(seal.png||'').replace(/\s/g,'');
+    if(png.length<32||png.length>900000||!/^[A-Za-z0-9+/=]+$/.test(png))throw Error('授权章图无效、损坏或过大。请上传不超过约600KB的8位PNG。');
+    next.authorized=true;next.png=png;
+  }
+  return next;
 }
 export function cleanSignature(signature){
   if(signature==null||signature.enabled!==true)return {enabled:false};

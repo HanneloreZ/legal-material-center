@@ -89,8 +89,13 @@ export function drawSeal(ctx, spec) {
   const size = spec.size || 520;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = INK; ctx.strokeStyle = INK;
-  const top = spec.topSpan || [-200, 20], bottom = spec.bottomSpan || [130, 50];
-  const topTrack = spec.topTracking || 1.06, bottomTrack = spec.bottomTracking || 1.08;
+  const topStart = spec.topStart ?? spec.topSpan?.[0] ?? DEFAULT_ARC.topStart;
+  const topEnd = spec.topEnd ?? spec.topSpan?.[1] ?? DEFAULT_ARC.topEnd;
+  const bottomStart = spec.bottomStart ?? spec.bottomSpan?.[0] ?? DEFAULT_ARC.bottomStart;
+  const bottomEnd = spec.bottomEnd ?? spec.bottomSpan?.[1] ?? DEFAULT_ARC.bottomEnd;
+  const topTrack = spec.topTracking || DEFAULT_ARC.topTracking, bottomTrack = spec.bottomTracking || DEFAULT_ARC.bottomTracking;
+  const topInset = Number.isFinite(spec.topInset) ? spec.topInset : DEFAULT_ARC.topInset;
+  const bottomInset = Number.isFinite(spec.bottomInset) ? spec.bottomInset : (kind === 'oval_contract' ? 48 : DEFAULT_ARC.bottomInset);
   if (kind === 'name_chop') {
     const name = cleanSealText(spec.person || '沈予安', '姓名');
     const chars = [...name].slice(0, 4);
@@ -108,14 +113,14 @@ export function drawSeal(ctx, spec) {
   const rx = (oval ? width : size) * .46, ry = (oval ? height : size) * .46;
   ring(ctx, cx, cy, rx, ry, 7);
   ring(ctx, cx, cy, rx - 16, ry - 16, 3);
-  arcText(ctx, company, cx, cy, rx - (spec.topInset || 28), ry - (spec.topInset || 28), top[0], top[1], size * (oval ? .05 : .064), topTrack);
+  arcText(ctx, company, cx, cy, Math.max(8, rx - topInset), Math.max(8, ry - topInset), topStart, topEnd, size * (oval ? .05 : .064), topTrack);
   if (kind === 'circle_emblem') {
     star(ctx, cx, cy - 6, size * .11, size * .045);
-    arcText(ctx, '合成样本章', cx, cy, rx - (spec.bottomInset || 34), ry - (spec.bottomInset || 34), bottom[0], bottom[1], size * .05, bottomTrack);
+    arcText(ctx, '合成样本章', cx, cy, Math.max(8, rx - bottomInset), Math.max(8, ry - bottomInset), bottomStart, bottomEnd, size * .05, bottomTrack);
   } else if (kind === 'oval_contract' || kind === 'circle_center_text') {
     ctx.font = `700 ${size * .07}px SealUI`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('合同专用章', cx, cy);
-    arcText(ctx, '合成样本章', cx, cy, rx - (spec.bottomInset || 48), ry - (spec.bottomInset || 48), bottom[0], bottom[1], size * .042, bottomTrack);
+    arcText(ctx, '合成样本章', cx, cy, Math.max(8, rx - bottomInset), Math.max(8, ry - bottomInset), bottomStart, bottomEnd, size * .042, bottomTrack);
   } else if (kind === 'circle_name_only') {
     ctx.font = `600 ${size * .055}px SealUI`; ctx.textAlign = 'center';
     ctx.fillText('合成样本', cx, cy + ry + 18);
@@ -219,3 +224,32 @@ export function inkStats(rgba) {
   return {coverage, mean: coverage ? sum / coverage : 0};
 }
 export const SCAN_SCOPE = '扫描质感作用于整页文字和印记，不只印在章上。少墨、缺印和稠墨只改变章面。';
+export const DEFAULT_ARC = {topStart:-200, topEnd:20, topTracking:1.06, topInset:28, bottomStart:130, bottomEnd:50, bottomTracking:1.08, bottomInset:34};
+export function arcReadsLeftToRight(start, end, rx = 140, ry = 100) {
+  const glyphs = arcGlyphAngles('左右', 200, 200, rx, ry, start, end, [16, 16]);
+  return glyphs[0].x <= glyphs.at(-1).x;
+}
+export function knockoutPaper(rgba) {
+  const out = new Uint8ClampedArray(rgba);
+  for (let i = 0; i < out.length; i += 4) {
+    const min = Math.min(out[i], out[i + 1], out[i + 2]);
+    const max = Math.max(out[i], out[i + 1], out[i + 2]);
+    if (out[i + 3] > 200 && min > 242 && max - min < 14) out[i + 3] = 0;
+  }
+  return out;
+}
+export function sealPlacement(pageW, pageH, stampW, stampH, seal, pageIndex = 0) {
+  const scale = seal.scale ?? .2;
+  const pages = Math.max(1, seal.pageCount || 1);
+  const slice = seal.mode === 'perforation' && pages > 1;
+  const nominal = slice ? Math.max(1, Math.round(stampW / pages)) : stampW;
+  const sx = slice ? Math.min(pageIndex, pages - 1) * Math.round(stampW / pages) : 0;
+  const sw = Math.min(nominal, Math.max(1, stampW - sx));
+  const dw = slice ? pageW * scale / pages : pageW * scale;
+  const dh = dw * (stampH / sw);
+  let x = slice ? (seal.edge === 'left' ? 0 : pageW - dw) : (seal.xRatio ?? .72) * pageW;
+  let y = (seal.yRatio ?? .55) * pageH - dh / 2;
+  x = Math.max(0, Math.min(Math.max(0, pageW - dw), x));
+  y = Math.max(0, Math.min(Math.max(0, pageH - dh), y));
+  return {slice, sx, sw, dw, dh, x, y, opacity: Math.max(.15, Math.min(1, seal.opacity ?? .92))};
+}

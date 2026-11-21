@@ -1,7 +1,7 @@
 import fontkit from '@pdf-lib/fontkit';
 import {PDFDocument, concatTransformationMatrix, popGraphicsState, pushGraphicsState, rgb, setTextRenderingMode, TextRenderingMode} from 'pdf-lib';
 import {EditError, LIMITS, toBytes} from './errors.js';
-import {fontForRun, missingGlyphs} from './fonts.js';
+import {fontForRun, missingGlyphs, resolveSignatureFont, SIGNATURE_FONTS} from './fonts.js';
 import {attachFontNames, inspectPdf} from './inspect.js';
 import {boxPosition, cleanSealLabel, cleanSignatureName, pagesInRange} from './marks.js';
 import {decodePng, encodePng, sliceVertical} from './png.js';
@@ -229,14 +229,18 @@ async function placeSignature(doc, mark, fontBytes, notes) {
     return;
   }
   const name = cleanSignatureName(mark.name);
-  const missing = missingGlyphs(fontBytes.sign, name);
-  if (missing.length) throw new EditError(`签名字体没有这些字，已停止且未生成签名：${missing.join(' ')}`, 'missing-glyph');
+  const fontId = resolveSignatureFont(mark.font);
+  const face = fontBytes[fontId];
+  if (!face) throw new EditError('这款硬笔字体没有载入。', 'signature');
+  const missing = missingGlyphs(face, name);
+  if (missing.length) throw new EditError(`这款手写字体没有这些字，已停止且未生成签名：${missing.join(' ')}`, 'missing-glyph');
   doc.registerFontkit(fontkit);
-  const font = await doc.embedFont(fontBytes.sign, {subset: false});
+  const font = await doc.embedFont(face, {subset: false});
   const textWidth = font.widthOfTextAtSize(name, 32) || width;
   const scale = width / textWidth;
   page.drawText(name, {x: geometry.x, y: geometry.y + height * .25, size: 32 * scale, font, color: rgb(.12, .12, .16), opacity});
-  notes.push('已按姓名生成稳定的行书字体签名。同一姓名每次字形相同，不是临摹真实笔迹。');
+  const label = SIGNATURE_FONTS.find(item => item.id === fontId)?.label || fontId;
+  notes.push(`已用${label}按姓名生成稳定字形。同一姓名每次相同，不是连续签名，也不临摹真实笔迹。`);
 }
 
 export function emptyPlan() { return {fonts: null, marks: []}; }

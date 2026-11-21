@@ -1,18 +1,24 @@
 import fontkit from '@pdf-lib/fontkit';
+import {HAND_FONTS} from '../shared/font-policy.js';
 
 export const FONT_CHOICES = {
   song: {id: 'song', label: '宋体（Noto Serif SC）', role: '正文默认', file: 'NotoSerifSC-Regular.ttf'},
   hei: {id: 'hei', label: '黑体（Noto Sans SC Bold）', role: '标题默认', file: 'NotoSansSC-Bold.ttf'},
   thin: {id: 'thin', label: '细黑（Noto Sans SC）', role: '与站点可检索PDF同属细黑体', file: 'NotoSansSC-Thin.ttf'},
-  sign: {id: 'sign', label: '行书模拟（马善政）', role: '姓名模拟签名，不是临摹笔迹', file: 'MaShanZheng-Regular.ttf'},
 };
+export const SIGNATURE_FONTS = HAND_FONTS;
+export function resolveSignatureFont(id) {
+  if (!id || id === 'sign' || id === 'mashan') return 'xiaolai';
+  if (!HAND_FONTS.some(font => font.id === id)) throw new Error('没有这款手写字体');
+  return id;
+}
 
 const fontBase = import.meta.env?.BASE_URL || '/';
 export const fontUrls = {
   song: `${fontBase}fonts/NotoSerifSC-Regular.ttf`,
   hei: `${fontBase}fonts/NotoSansSC-Bold.ttf`,
   thin: `${fontBase}fonts/NotoSansSC-Thin.ttf`,
-  sign: `${fontBase}fonts/MaShanZheng-Regular.ttf`,
+  ...Object.fromEntries(HAND_FONTS.map(font => [font.id, `${fontBase}fonts/handwriting/${font.file}`])),
 };
 
 export async function loadEditorFonts(fetcher = globalThis.fetch) {

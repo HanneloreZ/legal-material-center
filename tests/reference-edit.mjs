@@ -8,6 +8,7 @@ import JSZip from 'jszip';
 import {EditError, LIMITS} from '../online/reference-edit/errors.js';
 import {buildImagePdf, buildMixedFontPdf} from '../online/reference-edit/fixture.js';
 import {editPdf} from '../online/reference-edit/edit.js';
+import {FONT_CHOICES, resolveSignatureFont} from '../online/reference-edit/fonts.js';
 import {cleanSealLabel, cleanSignatureName} from '../online/reference-edit/marks.js';
 import {decodePng, encodePng, sliceVertical} from '../online/reference-edit/png.js';
 import {editZip, readZip, storedPayload} from '../online/reference-edit/zip.js';
@@ -15,7 +16,8 @@ import {editZip, readZip, storedPayload} from '../online/reference-edit/zip.js';
 const out = new URL('../work/reference-edit-qa/', import.meta.url);
 await fs.mkdir(out, {recursive: true});
 const fonts = Object.fromEntries(await Promise.all(Object.entries({
-  thin: 'NotoSansSC-Thin.ttf', song: 'NotoSerifSC-Regular.ttf', hei: 'NotoSansSC-Bold.ttf', sign: 'MaShanZheng-Regular.ttf',
+  thin: 'NotoSansSC-Thin.ttf', song: 'NotoSerifSC-Regular.ttf', hei: 'NotoSansSC-Bold.ttf',
+  xiaolai: 'handwriting/Xiaolai-Regular.ttf', jason: 'handwriting/JasonHandwriting8p.ttf', chen: 'handwriting/ChenYuluoyan-2.0-Thin.ttf', yshi: 'handwriting/YShiWrittenSC-Regular.ttf', tsuipita: 'handwriting/ToneOZ-Tsuipita-TC.ttf',
 }).map(async ([id, name]) => [id, new Uint8Array(await fs.readFile(new URL('../online/public/fonts/' + name, import.meta.url)))])));
 const planFonts = {scope: 'body-and-title', body: 'song', title: 'hei'};
 const textOf = file => execFileSync('pdftotext', [file, '-'], {encoding: 'utf8'});
@@ -182,6 +184,15 @@ assert.equal(runA.y, runB.y);
 assert.equal(runA.width, runB.width);
 assert.equal(runA.fontSize, runB.fontSize);
 assert.throws(() => cleanSignatureName(''), /姓名/);
+assert.equal(FONT_CHOICES.sign, undefined);
+assert.equal(resolveSignatureFont('sign'), 'xiaolai');
+assert.equal(resolveSignatureFont('mashan'), 'xiaolai');
+assert.equal(resolveSignatureFont('jason'), 'jason');
+const migrated = await editPdf(Uint8Array.from(mixed), {fonts: null, marks: [{kind: 'signature', source: 'generated', font: 'sign', name: '赵六', page: 1, widthPt: 90}]}, fonts);
+const migratedPath = fileURLToPath(new URL('migrated.pdf', out));
+await fs.writeFile(migratedPath, migrated.bytes);
+assert.match(textOf(migratedPath), /赵六/);
+await assert.rejects(editPdf(Uint8Array.from(mixed), {fonts: null, marks: [{kind: 'signature', source: 'generated', font: 'chen', name: '赵六', page: 1, widthPt: 90}]}, fonts), /没有这些字/);
 
 const other = await buildImagePdf();
 const zip = new JSZip();

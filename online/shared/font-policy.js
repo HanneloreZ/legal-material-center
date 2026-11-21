@@ -68,6 +68,38 @@ export async function loadChineseFont(pairing, fetcher = globalThis.fetch) {
   if (!response.ok) throw Error('无法读取所选中文字体');
   return new Uint8Array(await response.arrayBuffer());
 }
+export async function assertCovered(text, pairing) {
+  if (!pairing || !text) return;
+  const missing = missingGlyphs(await loadChineseFont(pairing), [...String(text)].filter(isCjk).join(''));
+  if (missing.length) throw Error(`所选中文字体缺少这些字，已停止且未生成文件：${[...new Set(missing)].slice(0, 24).join(' ')}`);
+}
+export function officeFonts(pairing) {
+  if (!pairing) return null;
+  const latin = {times:'Times New Roman', helvetica:'Arial', courier:'Courier New'}[pairing.latin];
+  const east = {song:'Noto Serif SC', hei:'Noto Sans SC', thin:'Noto Sans SC'}[pairing.chinese];
+  return {ascii:latin, hAnsi:latin, eastAsia:east};
+}
+export const FONT_COVERAGE = [
+  {id:'documents-pdf', entry:'文档与图片 / 文书 PDF', policy:'同一 imageAndTextPDF 配对，可见图注入同一中西文', applies:true},
+  {id:'documents-docx', entry:'文档与图片 / 文书 DOCX', policy:'officeFonts 写入 ascii 与 eastAsia', applies:true},
+  {id:'images-pdf', entry:'文档与图片 / 图片 PDF', policy:'同一 imageAndTextPDF 配对', applies:true},
+  {id:'images-docx', entry:'文档与图片 / 图片转录 DOCX', policy:'officeFonts', applies:true},
+  {id:'original', entry:'文档与图片 / 原件', policy:'不适用', applies:false, reason:'原件按收到的字节原样交付，不改字体。'},
+  {id:'certificates-pdf', entry:'证照 PDF', policy:'矢量底用 imageAndTextPDF，填写字段用 createPDF，都读同一配对', applies:true},
+  {id:'certificates-png', entry:'证照 PNG', policy:'可见文字注入同一配对，缺字停止', applies:true},
+  {id:'finance-pdf', entry:'财务 PDF', policy:'pdfFromImages', applies:true},
+  {id:'finance-png', entry:'财务 PNG', policy:'可见 SVG 注入同一配对', applies:true},
+  {id:'finance-data', entry:'财务 XLSX/CSV', policy:'不适用', applies:false, reason:'结构化数值，没有正文文字层。'},
+  {id:'rights-pdf', entry:'权属 PDF', policy:'pdfFromImages', applies:true},
+  {id:'rights-png', entry:'权属 PNG', policy:'可见 SVG 注入同一配对', applies:true},
+  {id:'contracts-docx', entry:'合同 DOCX', policy:'officeFonts', applies:true},
+  {id:'business-docx', entry:'业务文书 DOCX', policy:'officeFonts', applies:true},
+  {id:'business-data', entry:'业务台账 XLSX/CSV', policy:'不适用', applies:false, reason:'表格数据，不嵌入正文字体。'},
+  {id:'batch', entry:'批量制作', policy:'各引擎导出时读取同一个 activePairing', applies:true},
+  {id:'scans', entry:'扫描件模拟', policy:'不适用', applies:false, reason:'输出是图像，没有可检索文字层。页面会写明这一点。'},
+  {id:'screenshots', entry:'微信截图', policy:'不适用', applies:false, reason:'交付的是截图 PNG，没有文书文字层。'},
+  {id:'reference-edit', entry:'材料修订', policy:'正文和标题嵌入宋体、黑体或细黑；签名使用五款硬笔', applies:true},
+];
 export function toBase64(bytes) {
   let text = '';
   for (let i = 0; i < bytes.length; i += 32768) text += String.fromCharCode(...bytes.subarray(i, i + 32768));

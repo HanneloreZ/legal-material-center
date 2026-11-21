@@ -71,13 +71,19 @@ export async function renderMaterial(doc, dependencies={}) {
   const prepared=await prepareDocument(doc),appearance=doc.appearance || 'digital';
   const base=`Reference/${doc.document_id}/r${doc.revision}/${safeName(doc.title)}`;
   if(doc.engine==='business'){
+    const {activePairing,officeFonts}=await import('./font-policy.js');
+    const pairing=dependencies.pairing??activePairing();
+    const fonts=officeFonts(pairing);
     const files=[];
-    for(const format of doc.formats)files.push({format,path:base+'.'+format,blob:await prepared.model.businessFile(prepared.document,format),page_count:null,text_layer:format==='docx'?'editable-document':'structured-data',template_id:'business-'+prepared.document.kind+'-v1',template_version:'1.0.0'});
+    for(const format of doc.formats)files.push({format,path:base+'.'+format,blob:await prepared.model.businessFile(prepared.document,format,fonts,pairing),page_count:null,text_layer:format==='docx'?'editable-document':'structured-data',template_id:'business-'+prepared.document.kind+'-v1',template_version:'1.0.0'});
     return files;
   }
   if(doc.engine==='contracts') {
     const {docxBytes}=await import('../contracts/files.js');
-    return [{format:'docx',path:base+'.docx',blob:new Blob([await docxBytes(prepared.draft)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),
+    const {activePairing,officeFonts}=await import('./font-policy.js');
+    const pairing=dependencies.pairing??activePairing();
+    const fonts=officeFonts(pairing);
+    return [{format:'docx',path:base+'.docx',blob:new Blob([await docxBytes(prepared.draft,fonts,pairing)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),
       page_count:null,text_layer:'editable-document',template_id:prepared.draft.template.id,template_version:String(prepared.draft.template.version)}];
   }
   let pages, exporter, templateId, templateVersion, certificatePage;

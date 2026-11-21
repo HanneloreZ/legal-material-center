@@ -1,17 +1,33 @@
 import {cleanSettings,processPixels,random} from './model.js';
-import {applyPageScan,applySealTexture,drawSeal} from '../shared/seal.js';
+import {applyPageScan,applySealTexture,drawSeal,sealPlacement} from '../shared/seal.js';
+import {sealBitmap} from './seal-asset.js';
 const make=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+function paintTexture(ctx, texture){
+  if(texture==='scan')return;
+  const data=ctx.getImageData(0,0,ctx.canvas.width,ctx.canvas.height);
+  const next=applySealTexture(data.data,ctx.canvas.width,ctx.canvas.height,texture||'normal');
+  ctx.putImageData(new ImageData(next,ctx.canvas.width,ctx.canvas.height),0,0);
+}
 function sealLayer(spec){
+  if(spec.source==='png'){
+    const bmp=sealBitmap(spec.png);
+    if(!bmp)throw Error('授权章图还没有读入。请重新选择 PNG。');
+    const pad=Math.max(28,Math.round(bmp.width*.08));
+    const canvas=document.createElement('canvas');canvas.width=bmp.width;canvas.height=bmp.height+pad;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    const image=ctx.createImageData(bmp.width,bmp.height);image.data.set(bmp.rgba);ctx.putImageData(image,0,0);
+    ctx.fillStyle='#c4201e';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`600 ${Math.max(14,bmp.width*.055)}px SealUI,sans-serif`;
+    ctx.fillText('合成样本',bmp.width/2,bmp.height+pad*.62);
+    paintTexture(ctx,spec.texture);
+    return canvas;
+  }
   const oval=spec.kind==='oval_contract',width=480,height=oval?Math.round(width/1.36):480;
   const extra=spec.kind==='circle_name_only'||spec.kind==='name_chop'?40:0;
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height+extra;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   drawSeal(ctx,{...spec,size:width});
-  const image=ctx.getImageData(0,0,canvas.width,canvas.height);
-  if(spec.texture!=='scan'){
-    const next=applySealTexture(image.data,canvas.width,canvas.height,spec.texture||'normal');
-    ctx.putImageData(new ImageData(next,canvas.width,canvas.height),0,0);
-  }
+  paintTexture(ctx,spec.texture);
   return canvas;
 }
 export function simulateScan(source,raw,index=0,marks=[],seal=null,signature=null){
@@ -62,11 +78,10 @@ export function simulateScan(source,raw,index=0,marks=[],seal=null,signature=nul
   if(s.watermark){ctx.fillStyle=s.mode==='color'?'rgba(60,55,45,.40)':'rgba(55,55,55,.40)';ctx.font=`${Math.max(9,w*.008)}px sans-serif`;ctx.textAlign='right';ctx.fillText('合成扫描',w-w*.02,h-h*.012);}
   if(seal?.enabled&&typeof document!=='undefined'){
     const stamp=sealLayer(seal);
-    const pages=Math.max(1,seal.pageCount||1),slice=seal.mode==='perforation'&&pages>1;
-    const sw=slice?Math.round(stamp.width/pages):stamp.width,sx=slice?Math.min(index,pages-1)*Math.round(stamp.width/pages):0;
-    const dw=slice?w*.16/pages:w*.2,dh=dw*(stamp.height/sw);
-    const x=seal.edge==='left'?8:w-dw-8,y=Math.max(8,Math.min(h-dh-8,h*(seal.yRatio||.55)-dh/2));
-    ctx.drawImage(stamp,sx,0,Math.min(sw,stamp.width-sx),stamp.height,x,y,dw,dh);
+    const box=sealPlacement(w,h,stamp.width,stamp.height,seal,index);
+    ctx.save();ctx.globalAlpha=box.opacity;
+    ctx.drawImage(stamp,box.sx,0,box.sw,stamp.height,box.x,box.y,box.dw,box.dh);
+    ctx.restore();
   }
   if(signature?.enabled&&typeof document!=='undefined'){
     ctx.save();ctx.fillStyle='#202226';ctx.textAlign='left';ctx.textBaseline='alphabetic';
