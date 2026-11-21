@@ -1,6 +1,8 @@
 # 测试案例素材中心
 
-当前版本为1.5.0。新增“扫描件模拟” `/scans/`：将合成Word／PDF或图片转成扫描件，支持倾斜、弯曲、折痕、字迹褪色、手写批注与画线，导出图像PDF和逐页PNG／JPG。详见 [SCANS_HANDOFF.md](SCANS_HANDOFF.md)。
+当前版本为1.6.0。新增“材料修订” `/reference-edit/`：识别矢量 PDF 中混用的中文字体，预览后把正文统一为宋体、标题统一为黑体，并可放置样本章、跨页骑缝章和姓名模拟签名。扫描件会明确说明不能直接改字体。导出的是新文件；若导入业务 ZIP，只替换所选 PDF，其余条目字节不变。详见 [REFERENCE_EDIT.md](REFERENCE_EDIT.md)。
+
+1.5.0版本新增“扫描件模拟” `/scans/`：将合成Word／PDF或图片转成扫描件，支持倾斜、弯曲、折痕、字迹褪色、手写批注与画线，导出图像PDF和逐页PNG／JPG。详见 [SCANS_HANDOFF.md](SCANS_HANDOFF.md)。
 
 1.4.0版本新增内容：已接入“微信截图”：首页或“文档与图片”可进入 `/screenshots/`，支持编辑、原项目导入、统一批量制作及PNG交付；标注与项目配置保存在制作记录包。双击 `启动Reference合成工作台.command` 打开统一入口。详见 [SCREENSHOTS_HANDOFF.md](SCREENSHOTS_HANDOFF.md)。
 

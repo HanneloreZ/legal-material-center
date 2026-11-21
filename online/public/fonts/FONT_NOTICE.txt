@@ -1,0 +1,8 @@
+本目录字体均按 SIL Open Font License 1.1 随站点分发，许可全文见 OFL.txt。
+嵌入 PDF 时只嵌入实际用到的字形；源字体缺少的字会停止处理并列出，不会悄悄丢字。
+
+- Noto Sans SC（NotoSansSC-Regular.ttf，供原有可检索 PDF 使用；另有材料修订用的 GB2312 子集 NotoSansSC-Thin.ttf）：Copyright 2014-2021 Adobe，保留名称 Noto Sans。
+- Noto Sans SC Bold 子集（NotoSansSC-Bold.ttf）：Copyright 2014-2021 Adobe。用作标题黑体。
+- Noto Serif SC 子集（NotoSerifSC-Regular.ttf）：Copyright 2014-2021 Adobe。用作正文宋体角色，不是商用宋体字库。
+- Ma Shan Zheng（MaShanZheng-Regular.ttf）：Copyright 2018 The Ma Shan Zheng Project Authors，保留名称 Ma Shan Zheng。只用于由姓名生成稳定的字体签名，不用于临摹真实笔迹。
+材料修订嵌入整份子集字体，不使用会丢字形的二次裁剪。子集未覆盖的字会停止并列出。
