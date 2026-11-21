@@ -6,6 +6,8 @@ import {ScanStore} from './store.js';
 import {BatchRunner,digest} from '../shared/batch.js';
 import {IndexedDBStore} from '../shared/batch-store.js';
 import {assignRevisions,renderMaterial,validateDocument} from '../shared/adapters.js';
+import {SEAL_KINDS,SEAL_TEXTURES,SCAN_SCOPE} from '../shared/seal.js';
+import {HAND_FONTS} from '../shared/font-policy.js';
 
 const base=import.meta.env.BASE_URL;
 const initial=()=>({id:crypto.randomUUID(),schema_version:'scan-workspace/1',items:[],active:null});
@@ -13,6 +15,10 @@ const save=(blob,name)=>{const url=URL.createObjectURL(blob),a=document.createEl
 const sliders=[['tilt','倾斜角度',0,3,.1,'°'],['curve','纸张弯曲',0,60,1,''],['perspective','透视收缩',0,6,.2,'%'],['fold','折痕强度',0,60,1,''],['paper','纸张泛黄',0,70,1,''],['shadow','边缘与环境阴影',0,60,1,''],['noise','纸纹与噪点',0,40,1,''],['blur','扫描模糊',0,1.5,.05,''],['inkWear','字迹褪色',0,40,1,''],['contrast','印刷对比度',-15,35,1,'']];
 
 export default function App(){
+  useEffect(()=>{
+    const faces=[new FontFace('SealUI',`url(${base}fonts/NotoSansSC-Bold.ttf)`),...HAND_FONTS.map(font=>new FontFace(font.id,`url(${base}fonts/handwriting/${font.file})`))];
+    for(const face of faces)face.load().then(loaded=>document.fonts.add(loaded)).catch(()=>{});
+  },[]);
   const [store]=useState(()=>new ScanStore()),[workspace,setWorkspace]=useState(null),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[session,setSession]=useState(null),[page,setPage]=useState(0),[images,setImages]=useState(null),[previewBusy,setPreviewBusy]=useState(false),[view,setView]=useState('after'),[tool,setTool]=useState('none'),[ink,setInk]=useState('#23477b'),[text,setText]=useState('已核对'),[stroke,setStroke]=useState([]),[restoreError,setRestoreError]=useState(false);
   const upload=useRef(),plan=useRef(),guard=useRef(false),latest=useRef(),previewRef=useRef();latest.current=workspace;
   const item=workspace?.items.find(i=>i.model.id===workspace.active)||workspace?.items[0],model=item?.model;
@@ -34,12 +40,12 @@ export default function App(){
     if(!session||!model||session.sourceId!==model.id)return;let live=true;setPreviewBusy(true);setImages(null);
     const timer=setTimeout(async()=>{
       let original,after;
-      try{const p=await session.page(page,model.settings.dpi);original=p.canvas;after=simulateScan(original,model.settings,page,model.marks||[]);
+      try{const p=await session.page(page,model.settings.dpi);original=p.canvas;after=simulateScan(original,model.settings,page,model.marks||[],model.seal?.enabled?{...model.seal,pageIndex:page,pageCount:session.count}:null,model.signature);
         if(live)setImages({key:previewKey,before:original.toDataURL('image/png'),after:after.toDataURL('image/png'),width:after.width,height:after.height});
       }catch(e){if(live)setNotice(e.message);}finally{if(original)original.width=original.height=1;if(after)after.width=after.height=1;if(live)setPreviewBusy(false);}
     },180);
     return()=>{live=false;clearTimeout(timer);};
-  },[session,page,model?.settings,model?.marks]);
+  },[session,page,model?.settings,model?.marks,model?.seal,model?.signature]);
   function update(changes){setWorkspace(s=>({...s,items:s.items.map(i=>i.model.id===model.id?{...i,model:{...i.model,...changes}}:i)}));}
   const settings=changes=>update({settings:{...model.settings,...changes}});
   async function perform(fn){if(guard.current)return;guard.current=true;setBusy(true);setNotice('');try{await fn();}catch(e){setNotice(e.message);}finally{guard.current=false;setBusy(false);}}
@@ -104,6 +110,18 @@ export default function App(){
       <div className="two"><label>分辨率<select value={model.settings.dpi} onChange={e=>settings({dpi:Number(e.target.value)})}><option value={100}>100 DPI</option><option value={150}>150 DPI</option><option value={200}>200 DPI</option></select></label><label>随机种子<input type="number" min={0} max={4294967295} step={1} value={model.settings.seed} onChange={e=>{const seed=Number(e.target.value);if(Number.isInteger(seed)&&seed>=0&&seed<=4294967295)settings({seed});}}/></label></div>
       <label className="slider"><span>PDF／JPG画质<output>{model.settings.quality}%</output></span><input aria-label="PDF／JPG画质" type="range" min={50} max={100} value={model.settings.quality} onChange={e=>settings({quality:Number(e.target.value)})}/></label>
       <label className="check"><input type="checkbox" checked={model.settings.watermark} onChange={e=>settings({watermark:e.target.checked})}/>显示小型“合成扫描”标记</label>
+      <section className="ink-panel"><h3>可选签章</h3><p className="source-note">默认不盖章、不签名。章型与质感可独立组合。字体排出的姓名不是连续真实签名，也不临摹笔迹。</p>
+        <label className="check"><input type="checkbox" checked={!!model.seal?.enabled} onChange={e=>update({seal:e.target.checked?{enabled:true,kind:'circle_emblem',texture:'normal',mode:'stamp',company:'苍澜示意科技有限公司',person:'沈予安',edge:'right',yRatio:.55}:{enabled:false}})}/>在纸张效果之后加盖样本章</label>
+        {model.seal?.enabled&&<><label>章型<select value={model.seal.kind} onChange={e=>update({seal:{...model.seal,kind:e.target.value}})}>{SEAL_KINDS.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+          <label>质感<select value={model.seal.texture} onChange={e=>update({seal:{...model.seal,texture:e.target.value}})}>{SEAL_TEXTURES.map(item=><option key={item.id} value={item.id}>{item.label} · {item.scope}</option>)}</select></label>
+          <label>盖印<select value={model.seal.mode||'stamp'} onChange={e=>update({seal:{...model.seal,mode:e.target.value}})}><option value="stamp">单页或每页同一位置</option><option value="perforation">骑缝：先质感再纵切到页边</option></select></label>
+          <label>虚构主体<input value={model.seal.company||''} maxLength={40} onChange={e=>update({seal:{...model.seal,company:e.target.value}})}/></label>
+          <p className="source-note">{model.seal.texture==='scan'?SCAN_SCOPE:'少墨、缺印、稠墨只改章面，不把整页当成已扫描。'} 下弧默认正立，从左向右可读。</p></>}
+        <label className="check"><input type="checkbox" checked={!!model.signature?.enabled} onChange={e=>update({signature:e.target.checked?{enabled:true,font:'xiaolai',name:'沈予安',x:.68,y:.84}:{enabled:false}})}/>加一枚字体模拟签名</label>
+        {model.signature?.enabled&&<><label>硬笔字体<select value={model.signature.font} onChange={e=>update({signature:{...model.signature,font:e.target.value}})}>{HAND_FONTS.map(font=><option key={font.id} value={font.id}>{font.label}</option>)}</select></label>
+          <label>姓名<input value={model.signature.name} maxLength={12} onChange={e=>update({signature:{...model.signature,name:e.target.value}})}/></label>
+          <p className="source-note">{HAND_FONTS.find(font=>font.id===model.signature.font)?.note} 缺字会停止导出。</p></>}
+      </section>
       <section className="output-panel"><h3>导出扫描件</h3><div className="formats">{['pdf','png','jpg'].map(f=><label key={f}><input type="checkbox" checked={item.formats.includes(f)} onChange={e=>setWorkspace(s=>({...s,items:s.items.map(i=>i.model.id===model.id?{...i,formats:e.target.checked?[...i.formats,f]:i.formats.filter(x=>x!==f)}:i)}))}/>{f.toUpperCase()}</label>)}</div><button className="primary" disabled={!session||!item.formats.length} onClick={()=>perform(produce)}>{busy?'正在制作，请稍候…':'制作并下载'}</button><button disabled={!item.formats.length} onClick={()=>perform(()=>queue(false))}>这份送入批量制作</button><small>PDF合并全部页面，图片逐页输出。多文件自动打包。</small></section></fieldset>
       <button className="remove" disabled={busy} onClick={()=>{setWorkspace(s=>{const items=s.items.filter(i=>i.model.id!==model.id);return {...s,items,active:items[0]?.model.id||null};});}}>移除这份来源</button>
     </aside></>}</div>}

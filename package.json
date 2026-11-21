@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node tools/prepare-scan-assets.mjs && node tools/export-batch-schema.mjs && tsx tools/export-due-diligence-examples.mjs && node tools/export-material-examples.mjs && vite build",
     "dev": "node tools/prepare-scan-assets.mjs && vite --host 127.0.0.1 --port 3016 --strictPort",
-    "test": "node tests/online.mjs && node tests/contracts.mjs && tsx tests/phase1.mjs && tsx tests/phase2.mjs && npm run test:collector && npm run test:materials && npm run test:screenshots && npm run test:scans && npm run test:reference-edit",
+    "test": "node tests/online.mjs && node tests/contracts.mjs && tsx tests/phase1.mjs && tsx tests/phase2.mjs && npm run test:collector && npm run test:materials && npm run test:screenshots && npm run test:scans && npm run test:reference-edit && npm run test:seal-platform",
+    "test:seal-platform": "tsx tests/seal-platform.mjs",
     "test:reference-edit": "node tests/reference-edit.mjs",
     "test:contracts": "node tests/contracts.mjs",
     "test:phase1": "tsx tests/phase1.mjs",

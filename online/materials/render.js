@@ -4,6 +4,7 @@ import {imagePages,imageWord,cleanImage} from './images.js';
 import {prepareOriginal} from './originals.js';
 import {rasterWithFont} from '../shared/raster.js';
 import {imageAndTextPDF} from '../shared/pdf.js';
+import {activePairing} from '../shared/font-policy.js';
 export async function prepareMaterial(doc){
   const key={documents:'document',images:'image',original:'original'}[doc.engine];
   if(!doc.payload||Object.keys(doc.payload).length!==1||!Object.hasOwn(doc.payload,key))throw Error('材料payload需仅包含对应的document、image或original');
@@ -24,7 +25,7 @@ export async function renderNewMaterial(doc,dependencies={}){
   if(doc.formats.some(f=>f!=='docx')){
     const pages=isDoc?documentPages(model):imagePages(model),pngs=[];
     if(doc.formats.some(f=>f==='png'||f==='pdf'))for(const page of pages)pngs.push(await (dependencies.rasterize||rasterWithFont)(page));
-    if(doc.formats.includes('pdf'))files.push({format:'pdf',path:base+'.pdf',blob:await imageAndTextPDF(pages,pngs,{searchable:doc.pdf_mode!=='image',...(isDoc?{dimensions:()=>[595.28,841.89]}:{}),...(dependencies.fontLoader?{fontLoader:dependencies.fontLoader}:{}),...(dependencies.Parser?{Parser:dependencies.Parser}:{})}),page_count:pages.length,text_layer:doc.pdf_mode==='image'?'none':'svg-text',template_id:templateId,template_version:'1.0.0'});
+    if(doc.formats.includes('pdf'))files.push({format:'pdf',path:base+'.pdf',blob:await imageAndTextPDF(pages,pngs,{searchable:doc.pdf_mode!=='image',pairing:dependencies.pairing??activePairing(),...(isDoc?{dimensions:()=>[595.28,841.89]}:{}),...(dependencies.fontLoader?{fontLoader:dependencies.fontLoader}:{}),...(dependencies.Parser?{Parser:dependencies.Parser}:{})}),page_count:pages.length,text_layer:doc.pdf_mode==='image'?'none':'svg-text',template_id:templateId,template_version:'1.0.0'});
     for(const [i,p] of pages.entries())for(const format of doc.formats.filter(f=>f==='png'||f==='svg'))files.push({format,path:`${base}_p${i+1}.${format}`,blob:format==='svg'?new Blob([p.svg],{type:'image/svg+xml;charset=utf-8'}):new Blob([Uint8Array.from(atob(pngs[i].split(',')[1]),c=>c.charCodeAt(0))],{type:'image/png'}),page_count:1,text_layer:format==='svg'?'svg-text':'none',template_id:templateId,template_version:'1.0.0'});
   }
   return files;

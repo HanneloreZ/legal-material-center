@@ -10,6 +10,7 @@ import {MaterialsStore} from './store.js';
 import {IndexedDBStore} from '../shared/batch-store.js';
 import {BatchRunner,digest,validateBatch} from '../shared/batch.js';
 import {assignRevisions,renderMaterial,validateDocument} from '../shared/adapters.js';
+import {PAIRINGS,setExportPairing} from '../shared/font-policy.js';
 const label={documents:'文书',images:'图片',original:'原件'};
 const defaultFormats={documents:['docx','pdf'],images:['png','pdf','docx']};
 function fresh(engine,id){const model=engine==='documents'?exampleDocument(id):exampleImage(id);model.id=crypto.randomUUID();return {engine,model,formats:[...defaultFormats[engine]]};}
@@ -49,7 +50,8 @@ function ImageEditor({model,onChange}){
   return <DiagramFields model={model} onChange={onChange}/>;
 }
 export default function App(){
-  const [draftStore]=useState(()=>new MaterialsStore()),[batchStore]=useState(()=>new IndexedDBStore()),[state,setState]=useState(null),[domain,setDomain]=useState('labor'),[mode,setMode]=useState('documents'),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[query,setQuery]=useState(''),[libraryOpen,setLibraryOpen]=useState(false),[view,setView]=useState('edit');
+  const [draftStore]=useState(()=>new MaterialsStore()),[batchStore]=useState(()=>new IndexedDBStore()),[state,setState]=useState(null),[domain,setDomain]=useState('labor'),[mode,setMode]=useState('documents'),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[query,setQuery]=useState(''),[libraryOpen,setLibraryOpen]=useState(false),[view,setView]=useState('edit'),[pairing,setPairing]=useState('song-times');
+  useEffect(()=>{setExportPairing(pairing);try{localStorage.setItem('reference-export-pairing',pairing);}catch{}},[pairing]);
   const guard=useRef(false),inputFile=useRef(null),planFile=useRef(null);
   useEffect(()=>{let live=true;draftStore.get().then(saved=>{
     if(!live)return;
@@ -102,7 +104,7 @@ export default function App(){
         <label>脱敏核对状态<select value={model.source.redaction} onChange={e=>update({...model,source:{...model.source,redaction:e.target.value}})}><option value="not_checked">尚未核对</option><option value="user_declared">提供者声明已脱敏</option><option value="reviewed">我已另行核对</option></select></label>
         <label>接收与核对备注<textarea value={model.source.notes} onChange={e=>update({...model,source:{...model.source,notes:e.target.value}})}/></label>
       </>}
-      <section className="export-panel"><h2>本份输出</h2><div className="format-options">{(item.engine==='original'?[model.file.format]:item.engine==='documents'?['docx','pdf','png','svg']:['png','pdf','svg','docx']).map(f=><label key={f}><input type="checkbox" checked={item.formats.includes(f)} disabled={item.engine==='original'} onChange={e=>setState(s=>({...s,items:s.items.map(i=>i.model.id===model.id?{...i,formats:e.target.checked?[...i.formats,f]:i.formats.filter(v=>v!==f)}:i)}))}/>{f.toUpperCase()}{item.engine==='images'&&f==='docx'?' 转录':''}</label>)}</div><button className="primary" disabled={!item.formats.length} onClick={()=>perform(produce)}>{busy?'正在保存与制作…':item.engine==='original'?'保存并下载原件':'制作并下载本份'}</button><p className="muted">多个文件打包下载，制作记录可从批量制作入口导出。</p></section></fieldset>
+      <section className="export-panel"><h2>本份输出</h2><label>导出前的中西文配对<select aria-label="中西文配对" value={pairing} onChange={e=>setPairing(e.target.value)}>{PAIRINGS.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label><p className="muted">同一份里的中文用同一款，西文用同一款。缺字会停止，不会生成缺字文件。扫描件不能靠这里改字体。</p><div className="format-options">{(item.engine==='original'?[model.file.format]:item.engine==='documents'?['docx','pdf','png','svg']:['png','pdf','svg','docx']).map(f=><label key={f}><input type="checkbox" checked={item.formats.includes(f)} disabled={item.engine==='original'} onChange={e=>setState(s=>({...s,items:s.items.map(i=>i.model.id===model.id?{...i,formats:e.target.checked?[...i.formats,f]:i.formats.filter(v=>v!==f)}:i)}))}/>{f.toUpperCase()}{item.engine==='images'&&f==='docx'?' 转录':''}</label>)}</div><button className="primary" disabled={!item.formats.length} onClick={()=>perform(produce)}>{busy?'正在保存与制作…':item.engine==='original'?'保存并下载原件':'制作并下载本份'}</button><p className="muted">多个文件打包下载，制作记录可从批量制作入口导出。</p></section></fieldset>
     </main><section className="preview-panel" aria-label="文件预览"><div className="preview-heading"><h2>{item.engine==='original'?'原件预览':'排版预览'}</h2><span>{item.engine==='original'?'原字节保留':'合成案例材料'}</span></div><Preview item={item}/></section></div>}
   </>;
 }

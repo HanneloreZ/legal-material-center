@@ -107,7 +107,9 @@ export async function renderMaterial(doc, dependencies={}) {
       const {businessDataFile}=await import('./finance-data.js');
       files.push({format,path:base+'.'+format,blob:await businessDataFile(prepared.project,doc.payload.kind,format,{stage:doc.payload.stage,variant:doc.payload.voucher_variant}),page_count:null,text_layer:'structured-data',template_id:templateId,template_version:templateVersion});
     } else if(format==='pdf') {
-      const options={searchable:doc.pdf_mode!=='image',...(dependencies.fontLoader?{fontLoader:dependencies.fontLoader}:{}),...(dependencies.Parser?{Parser:dependencies.Parser}:{})};
+      const {activePairing}=await import('./font-policy.js');
+      const pairing=dependencies.pairing??activePairing();
+      const options={searchable:doc.pdf_mode!=='image',...(pairing?{pairing}:{}),...(dependencies.fontLoader?{fontLoader:dependencies.fontLoader}:{}),...(dependencies.Parser?{Parser:dependencies.Parser}:{})};
       const blob=certificatePage ? await exporter.pdfFile(certificatePage,images[0],options.searchable,dependencies.fontLoader || exporter.loadFont,{...(dependencies.Parser?{Parser:dependencies.Parser}:{})})
         : await exporter.pdfFromImages(pages,images,options);
       files.push({format,path:base+'.pdf',blob,page_count:pages.length,text_layer:options.searchable?'svg-text':'none',text_scope:certificatePage&&!certificatePage.template.vector_style?'filled-fields':'svg-text-excluding-raster-background',template_id:templateId,template_version:templateVersion});

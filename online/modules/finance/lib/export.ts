@@ -11,7 +11,7 @@ export async function pngData(page:DocumentPage,mode:Appearance):Promise<string>
  const svg=appearanceSVG(page.svg,mode),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
  try{const im=new Image();await new Promise<void>((resolve,reject)=>{im.onload=()=>resolve();im.onerror=()=>reject(Error('图像生成失败，请尝试 SVG 导出'));im.src=url;});const canvas=document.createElement('canvas');canvas.width=page.width*2;canvas.height=page.height*2;const ctx=canvas.getContext('2d');if(!ctx)throw Error('浏览器无法创建图像');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(im,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/png');}finally{URL.revokeObjectURL(url);}
 }
-export async function pdfFromImages(pages:DocumentPage[],images:string[],options={}){return imageAndTextPDF(pages,images,options);}
+export async function pdfFromImages(pages:DocumentPage[],images:string[],options:Record<string,unknown>={}){const {activePairing}=await import('../../../shared/font-policy.js');const pairing=options.pairing??activePairing();return imageAndTextPDF(pages,images,{...options,...(pairing?{pairing}:{})});}
 export async function exportPDF(pages:DocumentPage[],mode:Appearance,render=pngData,options={}){const images=[];for(const page of pages)images.push(await withTimeout(render(page,mode)));return pdfFromImages(pages,images,options);}
 export function financialGroups(p:Project){
  const groups=new Map<string,{id:string;name:string;kind:DocKind;pages:DocumentPage[]}>();
