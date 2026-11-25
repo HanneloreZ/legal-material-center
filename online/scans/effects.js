@@ -1,35 +1,8 @@
 import {cleanSettings,processPixels,random} from './model.js';
-import {applyPageScan,applySealTexture,drawSeal,sealPlacement} from '../shared/seal.js';
-import {sealBitmap} from './seal-asset.js';
+import {applyPageScan,sealPlacement} from '../shared/seal.js';
+import {renderTexturedSeal} from '../shared/contract-perforation.js';
 const make=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
-function paintTexture(ctx, texture){
-  if(texture==='scan')return;
-  const data=ctx.getImageData(0,0,ctx.canvas.width,ctx.canvas.height);
-  const next=applySealTexture(data.data,ctx.canvas.width,ctx.canvas.height,texture||'normal');
-  ctx.putImageData(new ImageData(next,ctx.canvas.width,ctx.canvas.height),0,0);
-}
-function sealLayer(spec){
-  if(spec.source==='png'){
-    const bmp=sealBitmap(spec.png);
-    if(!bmp)throw Error('授权章图还没有读入。请重新选择 PNG。');
-    const pad=Math.max(28,Math.round(bmp.width*.08));
-    const canvas=document.createElement('canvas');canvas.width=bmp.width;canvas.height=bmp.height+pad;
-    const ctx=canvas.getContext('2d',{willReadFrequently:true});
-    const image=ctx.createImageData(bmp.width,bmp.height);image.data.set(bmp.rgba);ctx.putImageData(image,0,0);
-    ctx.fillStyle='#c4201e';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.font=`600 ${Math.max(14,bmp.width*.055)}px SealUI,sans-serif`;
-    ctx.fillText('合成样本',bmp.width/2,bmp.height+pad*.62);
-    paintTexture(ctx,spec.texture);
-    return canvas;
-  }
-  const oval=spec.kind==='oval_contract',width=480,height=oval?Math.round(width/1.36):480;
-  const extra=spec.kind==='circle_name_only'||spec.kind==='name_chop'?40:0;
-  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height+extra;
-  const ctx=canvas.getContext('2d',{willReadFrequently:true});
-  drawSeal(ctx,{...spec,size:width});
-  paintTexture(ctx,spec.texture);
-  return canvas;
-}
+const sealLayer=spec=>renderTexturedSeal(spec);
 export function simulateScan(source,raw,index=0,marks=[],seal=null,signature=null){
   const s=cleanSettings(raw),seed=(s.seed+Math.imul(index+1,2654435761))>>>0,rand=random(seed),w=source.width,h=source.height;
   if(w*h>16000000||w<1||h<1)throw Error('页面过大，请降低分辨率');

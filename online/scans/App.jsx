@@ -9,6 +9,7 @@ import {assignRevisions,renderMaterial,validateDocument} from '../shared/adapter
 import {SEAL_KINDS,SEAL_TEXTURES,SCAN_SCOPE,arcReadsLeftToRight} from '../shared/seal.js';
 import {HAND_FONTS} from '../shared/font-policy.js';
 import {prepareSealAsset} from './seal-asset.js';
+import {paintContractSlice,stampContractPerforation} from '../shared/contract-perforation.js';
 import {decodePng} from '../reference-edit/png.js';
 
 const base=import.meta.env.BASE_URL;
@@ -41,10 +42,10 @@ export default function App(){
   useEffect(()=>{
     if(!session||!model||session.sourceId!==model.id)return;let live=true;setPreviewBusy(true);setImages(null);
     const timer=setTimeout(async()=>{
-      let original,after;
-      try{const p=await session.page(page,model.settings.dpi);if(model.seal?.source==='png')await prepareSealAsset(model.seal);original=p.canvas;after=simulateScan(original,model.settings,page,model.marks||[],model.seal?.enabled?{...model.seal,pageIndex:page,pageCount:session.count}:null,model.signature);
+      let original,after,source;
+      try{const p=await session.page(page,model.settings.dpi);source=p.canvas;if(model.seal?.source==='png')await prepareSealAsset(model.seal);const sealNow=model.seal?.enabled?{...model.seal,pageIndex:page,pageCount:session.count}:null;if(sealNow?.mode==='perforation'&&session.count>1){original=document.createElement('canvas');original.width=source.width;original.height=source.height;original.getContext('2d').drawImage(source,0,0);paintContractSlice(original,sealNow);}else original=source;after=simulateScan(source,model.settings,page,model.marks||[],sealNow,model.signature);
         if(live)setImages({key:previewKey,before:original.toDataURL('image/png'),after:after.toDataURL('image/png'),width:after.width,height:after.height});
-      }catch(e){if(live)setNotice(e.message);}finally{if(original)original.width=original.height=1;if(after)after.width=after.height=1;if(live)setPreviewBusy(false);}
+      }catch(e){if(live)setNotice(e.message);}finally{if(source)source.width=source.height=1;if(original&&original!==source)original.width=original.height=1;if(after)after.width=after.height=1;if(live)setPreviewBusy(false);}
     },180);
     return()=>{live=false;clearTimeout(timer);};
   },[session,page,model?.settings,model?.marks,model?.seal,model?.signature]);
@@ -67,6 +68,20 @@ export default function App(){
     await prepareSealAsset(next);
     setSeal(next);
     setNotice('已读入授权章图。近白底已变为透明，并保留合成样本标记。');
+  }
+  async function exportPerforation(){
+    if(!model.seal?.enabled||model.seal.mode!=='perforation')throw Error('未选择骑缝。未签署的草稿不会自动加骑缝章。');
+    if(model.source.file.format!=='pdf')throw Error('请先导入多页合同 PDF。Word 请先导出 PDF，再加骑缝。');
+    if(!session||session.count<2)throw Error('骑缝章至少需要连续两页。单页不要把整章重复盖上。');
+    const {cleanSeal}=await import('./model.js');
+    const seal=cleanSeal({...model.seal,mode:'perforation'});
+    if(seal.source==='png')await prepareSealAsset(seal);
+    const original=Uint8Array.from(atob(model.source.file.data_base64),c=>c.charCodeAt(0));
+    const snapshot=original.slice();
+    const next=await stampContractPerforation(original,{...seal,filename:model.source.file.name,pageCount:session.count});
+    for(let i=0;i<snapshot.length;i++)if(snapshot[i]!==original[i])throw Error('原文件被改动，已停止。');
+    save(new Blob([next],{type:'application/pdf'}),`${model.title.replace(/\.pdf$/i,'')}_骑缝.pdf`);
+    setNotice('已下载带骑缝的新PDF。原文件仍留在浏览器里，没有被覆盖。');
   }
   async function perform(fn){if(guard.current)return;guard.current=true;setBusy(true);setNotice('');try{await fn();}catch(e){setNotice(e.message);}finally{guard.current=false;setBusy(false);}}
   async function importFiles(files){
@@ -121,7 +136,7 @@ export default function App(){
     </aside>{!model?<main className="empty"><span className="empty-sheet">▤</span><h2>先放入一份电子文档</h2><p>选择纸张、复印或手机拍摄的效果，<br/>再微调倾斜、弯曲、折痕和字迹。</p><button className="primary" disabled={busy} onClick={()=>upload.current.click()}>选择Word或PDF</button></main>:<><section className="scan-preview" data-preview-key={previewKey}><div className="preview-top"><div><span className="eyebrow">02 / 逐页检查</span><h2>{model.title}</h2></div><div className="segmented"><button aria-pressed={view==='before'} onClick={()=>{setView('before');setTool('none');}}>原稿</button><button aria-pressed={view==='after'} onClick={()=>{setView('after');setTool('none');}}>扫描效果</button></div></div>
       <div className="page-toolbar"><button disabled={!session||page===0||busy} onClick={()=>{setPage(v=>v-1);setTool('none');}}>上一页</button><span>{session?`${page+1} / ${session.count} 页`:'正在排版…'}</span><button disabled={!session||page>=session.count-1||busy} onClick={()=>{setPage(v=>v+1);setTool('none');}}>下一页</button></div>
       <div className="paper-stage">{previewBusy&&<p className="preview-loading">正在生成页面…</p>}{images?.key===previewKey?<div data-preview-key={images.key} className={'paper tool-'+tool} ref={previewRef} onPointerDown={down} onPointerMove={e=>{if(stroke.length&&tool==='pen'&&stroke.length<2000)setStroke(points=>[...points,point(e)]);}} onPointerUp={finish} onPointerCancel={()=>setStroke([])}><img draggable="false" alt={view==='before'?'原始文档页面':'模拟扫描结果'} src={images[view]}/>{stroke.length>0&&<svg viewBox="0 0 1 1" preserveAspectRatio="none"><polyline points={stroke.map(p=>p.join(',')).join(' ')} fill="none" stroke={ink} strokeWidth=".002"/></svg>}</div>:!previewBusy&&<p className="preview-loading">{session?'页面暂不可预览，请检查上方提示。':'正在读取文档…'}</p>}</div>
-      <div className="preview-caption"><span>{images?`${images.width} × ${images.height} px · ${model.settings.dpi} DPI`:''}</span><span>{tool==='pen'?'在原稿上画线，松开后应用扫描效果':tool==='text'?'点击原稿，放置文字批注':session?.note}</span></div>
+      <div className="preview-caption"><span>{images?`${images.width} × ${images.height} px · ${model.settings.dpi} DPI`:''}</span><span>{model.seal?.enabled&&model.seal.mode==='perforation'?'原稿预览叠有本页骑缝切片，位置与新PDF一致。扫描效果仍会把整页栅格化。':tool==='pen'?'在原稿上画线，松开后应用扫描效果':tool==='text'?'点击原稿，放置文字批注':session?.note}</span></div>
     </section><aside className="controls"><span className="eyebrow">03 / 纸张与字迹</span><label>输出标题<input maxLength={150} value={model.title} disabled={busy} onChange={e=>update({title:e.target.value})}/></label>
       <div className="presets">{presets.map(p=><button disabled={busy} key={p.id} title={p.description} onClick={()=>settings({...defaults,...p.settings,curve:p.id==='phone'?25:0,inkWear:p.id==='archive'?12:0,seed:model.settings.seed})}>{p.name}</button>)}</div>
       <fieldset disabled={busy}><label>色彩模式<select value={model.settings.mode} onChange={e=>settings({mode:e.target.value})}><option value="color">彩色纸张</option><option value="gray">灰度复印</option><option value="bw">黑白阈值</option></select></label>
@@ -155,7 +170,9 @@ export default function App(){
           <label className="slider"><span>纵向位置<output>{Math.round((model.seal.yRatio??.55)*100)}%</output></span><input aria-label="纵向位置" type="range" min={0} max={1} step={.01} value={model.seal.yRatio??.55} onChange={e=>setSeal({...model.seal,yRatio:Number(e.target.value)})}/></label>
           <label className="slider"><span>大小<output>{Math.round((model.seal.scale??.2)*100)}%</output></span><input aria-label="章的大小" type="range" min={.08} max={.46} step={.01} value={model.seal.scale??.2} onChange={e=>setSeal({...model.seal,scale:Number(e.target.value)})}/></label>
           <label className="slider"><span>透明度<output>{Math.round((model.seal.opacity??.92)*100)}%</output></span><input aria-label="章的透明度" type="range" min={.15} max={1} step={.01} value={model.seal.opacity??.92} onChange={e=>setSeal({...model.seal,opacity:Number(e.target.value)})}/></label>
-          {model.seal.mode==='perforation'&&<label>骑缝页边<select aria-label="骑缝页边" value={model.seal.edge||'right'} onChange={e=>setSeal({...model.seal,edge:e.target.value})}><option value="right">右页边</option><option value="left">左页边</option></select></label>}
+          {model.seal.mode==='perforation'&&<><label>骑缝页边<select aria-label="骑缝页边" value={model.seal.edge||'right'} onChange={e=>setSeal({...model.seal,edge:e.target.value})}><option value="right">右页边</option><option value="left">左页边</option></select></label>
+          <p className="source-note">骑缝用上面选定的章型和质感，先做质感再按页纵切到页边。原稿预览叠的是这一页的切片。导出的是新PDF，不改原文件。未勾选盖章时不会自动加。判决书和裁定书不能加模拟骑缝。</p>
+          <button type="button" disabled={!session||session.count<2||model.source.file.format!=='pdf'} onClick={()=>perform(exportPerforation)}>导出带骑缝的新PDF</button></>}
         </>}
         <label className="check"><input type="checkbox" checked={!!model.signature?.enabled} onChange={e=>update({signature:e.target.checked?{enabled:true,font:'xiaolai',name:'沈予安',x:.68,y:.84}:{enabled:false}})}/>加一枚字体模拟签名</label>
         {model.signature?.enabled&&<><label>硬笔字体<select aria-label="硬笔字体" value={model.signature.font} onChange={e=>update({signature:{...model.signature,font:e.target.value}})}>{HAND_FONTS.map(font=><option key={font.id} value={font.id}>{font.label}</option>)}</select></label>

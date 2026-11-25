@@ -176,4 +176,48 @@ const docx = await renderNewMaterial({document_id:'font-docx', revision:1, title
 const styles = await (await JSZip.loadAsync(await docx[0].blob.arrayBuffer())).file('word/styles.xml').async('string');
 assert.match(styles, /Times New Roman/);
 assert.match(styles, /Noto Sans SC/);
+const {stampContractPerforation} = await import('../online/shared/contract-perforation.js');
+const {PDFDocument, StandardFonts} = await import('pdf-lib');
+const host = await PDFDocument.create();
+const roman = await host.embedFont(StandardFonts.Helvetica);
+host.addPage([420, 560]).drawText('Contract page one 1280.50', {x: 36, y: 500, size: 14, font: roman});
+host.addPage([420, 560]).drawText('Contract page two 2026-04-01', {x: 36, y: 500, size: 14, font: roman});
+const raw = new Uint8Array(await host.save());
+const untouched = raw.slice();
+await assert.rejects(stampContractPerforation(raw, {enabled: false, mode: 'perforation'}, createCanvas), /不会自动/);
+assert.deepEqual(raw, untouched);
+const sealed = await stampContractPerforation(raw, {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', company: '苍澜示意科技有限公司', edge: 'right', scale: .24, yRatio: .5, opacity: 1, filename: '买卖合同.pdf'}, createCanvas);
+assert.deepEqual(raw, untouched);
+const sealedPath = fileURLToPath(new URL('../work/contract-perforation.pdf', import.meta.url));
+await fs.writeFile(sealedPath, sealed);
+const sealedText = execFileSync('pdftotext', [sealedPath, '-'], {encoding: 'utf8'});
+assert.match(sealedText, /1280\.50/);
+assert.match(sealedText, /2026-04-01/);
+execFileSync('pdftoppm', ['-r', '72', '-png', sealedPath, fileURLToPath(new URL('../work/contract-perforation', import.meta.url))]);
+const {decodePng} = await import('../online/reference-edit/png.js');
+const edges = [];
+for (const page of [1, 2]) {
+  const image = await decodePng(await fs.readFile(new URL(`../work/contract-perforation-${page}.png`, import.meta.url)));
+  let right = 0, center = 0;
+  for (let y = 0; y < image.height; y++) {
+    for (let x = image.width - 18; x < image.width; x++) {
+      const i = (y * image.width + x) * 4;
+      if (image.rgba[i] > 140 && image.rgba[i + 1] < 90 && image.rgba[i + 2] < 90) right++;
+    }
+    const mid = (y * image.width + Math.round(image.width / 2)) * 4;
+    if (image.rgba[mid] > 140 && image.rgba[mid + 1] < 90 && image.rgba[mid + 2] < 90) center++;
+  }
+  assert(right > 20, 'page ' + page + ' perforation is not on the edge');
+  assert(center < 5, 'page ' + page + ' repeats a full seal in the center');
+  edges.push(right);
+}
+assert.notEqual(edges[0], edges[1]);
+const one = await PDFDocument.create();
+one.addPage([420, 560]);
+await assert.rejects(stampContractPerforation(new Uint8Array(await one.save()), {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', filename: '单页.pdf'}, createCanvas), /至少需要连续两页/);
+const ruling = await PDFDocument.create();
+ruling.setTitle('民事裁定书');
+ruling.addPage([420, 560]); ruling.addPage([420, 560]);
+await assert.rejects(stampContractPerforation(new Uint8Array(await ruling.save()), {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', filename: '材料.pdf'}, createCanvas), /裁定书/);
+await assert.rejects(stampContractPerforation(raw, {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', filename: '民事判决书.pdf'}, createCanvas), /判决书/);
 console.log('PASS: five handwriting fonts, 5x5 textures, upright arcs, perforation reassembly, paired export fonts, unsigned drafts, scan scope');
