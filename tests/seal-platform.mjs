@@ -6,7 +6,7 @@ import {createCanvas, GlobalFonts} from '@napi-rs/canvas';
 import {DOMParser} from '@xmldom/xmldom';
 import {imageAndTextPDF} from '../online/shared/pdf.js';
 import {FONT_COVERAGE,PAIRINGS,activePairing,handFont,loadHandFont,missingGlyphs,officeFonts,setExportPairing} from '../online/shared/font-policy.js';
-import {SEAL_KINDS,SEAL_TEXTURES,applyPageScan,applySealTexture,arcGlyphAngles,arcReadsLeftToRight,drawSeal,inkStats,knockoutPaper,sealPlacement,uprightAngle} from '../online/shared/seal.js';
+import {SEAL_KINDS,SEAL_TEXTURES,applyPageScan,applySealTexture,arcGlyphAngles,arcReadsLeftToRight,drawSeal,inkStats,knockoutPaper,sealPlacement,uprightAngle,verticalSlice} from '../online/shared/seal.js';
 import {renderNewMaterial} from '../online/materials/render.js';
 import {exampleDocument} from '../online/materials/documents.js';
 import {pdfFromImages as financePdf} from '../online/modules/finance/lib/export.ts';
@@ -186,32 +186,75 @@ const raw = new Uint8Array(await host.save());
 const untouched = raw.slice();
 await assert.rejects(stampContractPerforation(raw, {enabled: false, mode: 'perforation'}, createCanvas), /不会自动/);
 assert.deepEqual(raw, untouched);
-const sealed = await stampContractPerforation(raw, {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', company: '苍澜示意科技有限公司', edge: 'right', scale: .24, yRatio: .5, opacity: 1, filename: '买卖合同.pdf'}, createCanvas);
-assert.deepEqual(raw, untouched);
-const sealedPath = fileURLToPath(new URL('../work/contract-perforation.pdf', import.meta.url));
-await fs.writeFile(sealedPath, sealed);
-const sealedText = execFileSync('pdftotext', [sealedPath, '-'], {encoding: 'utf8'});
-assert.match(sealedText, /1280\.50/);
-assert.match(sealedText, /2026-04-01/);
-execFileSync('pdftoppm', ['-r', '72', '-png', sealedPath, fileURLToPath(new URL('../work/contract-perforation', import.meta.url))]);
-const {decodePng} = await import('../online/reference-edit/png.js');
-const edges = [];
-for (const page of [1, 2]) {
-  const image = await decodePng(await fs.readFile(new URL(`../work/contract-perforation-${page}.png`, import.meta.url)));
-  let right = 0, center = 0;
-  for (let y = 0; y < image.height; y++) {
-    for (let x = image.width - 18; x < image.width; x++) {
-      const i = (y * image.width + x) * 4;
-      if (image.rgba[i] > 140 && image.rgba[i + 1] < 90 && image.rgba[i + 2] < 90) right++;
-    }
-    const mid = (y * image.width + Math.round(image.width / 2)) * 4;
-    if (image.rgba[mid] > 140 && image.rgba[mid + 1] < 90 && image.rgba[mid + 2] < 90) center++;
+const {decodePng, sliceVertical} = await import('../online/reference-edit/png.js');
+for (const count of [3, 4, 5, 7, 8, 30]) {
+  let covered = 0;
+  const widths = [];
+  for (let index = 0; index < count; index++) {
+    const part = verticalSlice(480, count, index);
+    assert.equal(part.start, covered);
+    covered = part.end;
+    widths.push(part.width);
+    const box = sealPlacement(420, 560, 480, 480, {mode: 'perforation', pageCount: count, edge: 'right', scale: .3, yRatio: .5}, index);
+    assert.equal(box.sx, part.start);
+    assert.equal(box.sw, part.width);
+    assert.equal(Math.round((box.x + box.dw) * 100), 42000);
   }
-  assert(right > 20, 'page ' + page + ' perforation is not on the edge');
-  assert(center < 5, 'page ' + page + ' repeats a full seal in the center');
-  edges.push(right);
+  assert.equal(covered, 480);
+  assert.equal(widths.reduce((sum, width) => sum + width, 0), 480);
+  const band = new Uint8Array(480 * 4 * 4);
+  for (let x = 0; x < 480; x++) for (let y = 0; y < 4; y++) {
+    const i = (y * 480 + x) * 4;
+    band[i] = x % 251; band[i + 1] = (x * 3) % 251; band[i + 2] = 20; band[i + 3] = 255;
+  }
+  const parts = sliceVertical(band, 480, 4, count);
+  const back = new Uint8Array(band.length);
+  let cursor = 0;
+  for (const part of parts) {
+    assert.equal(part.width, widths[part.index]);
+    for (let y = 0; y < 4; y++) back.set(part.rgba.subarray(y * part.width * 4, (y + 1) * part.width * 4), (y * 480 + cursor) * 4);
+    cursor += part.width;
+  }
+  assert.deepEqual(back, band);
 }
-assert.notEqual(edges[0], edges[1]);
+assert.throws(() => verticalSlice(4, 8, 3), /不能均分/);
+async function stampedContract(count) {
+  const book = await PDFDocument.create();
+  const face = await book.embedFont(StandardFonts.Helvetica);
+  for (let index = 0; index < count; index++) book.addPage([420, 560]).drawText(`Contract page ${index + 1} amount 1280.50`, {x: 36, y: 500, size: 14, font: face});
+  const source = new Uint8Array(await book.save());
+  const kept = source.slice();
+  const output = await stampContractPerforation(source, {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', company: '苍澜示意科技有限公司', edge: 'right', scale: .36, yRatio: .5, opacity: 1, filename: `买卖合同-${count}页.pdf`}, createCanvas);
+  assert.deepEqual(source, kept);
+  const path = fileURLToPath(new URL(`../work/contract-perforation-${count}.pdf`, import.meta.url));
+  await fs.writeFile(path, output);
+  const text = execFileSync('pdftotext', [path, '-'], {encoding: 'utf8'});
+  for (let index = 1; index <= count; index++) assert.match(text, new RegExp(`page ${index} amount 1280\\.50`));
+  execFileSync('pdftoppm', ['-r', '72', '-png', path, fileURLToPath(new URL(`../work/contract-perforation-${count}`, import.meta.url))]);
+  const fingerprints = [];
+  for (let page = 1; page <= count; page++) {
+    const image = await decodePng(await fs.readFile(new URL(`../work/contract-perforation-${count}-${page}.png`, import.meta.url)));
+    let right = 0, center = 0, signature = 0;
+    for (let y = 0; y < image.height; y++) {
+      for (let x = image.width - 28; x < image.width; x++) {
+        const i = (y * image.width + x) * 4;
+        if (image.rgba[i] > 140 && image.rgba[i + 1] < 100 && image.rgba[i + 2] < 100) {
+          right++;
+          signature = Math.imul(signature, 33) + y + x >>> 0;
+        }
+      }
+      const mid = (y * image.width + Math.round(image.width / 2)) * 4;
+      if (image.rgba[mid] > 140 && image.rgba[mid + 1] < 100 && image.rgba[mid + 2] < 100) center++;
+    }
+    assert(right > 12, `${count} pages, page ${page} perforation is not on the edge`);
+    assert(center < 5, `${count} pages, page ${page} repeats a full seal`);
+    fingerprints.push(signature);
+  }
+  assert.equal(new Set(fingerprints).size, count, `${count} pages reused a slice`);
+}
+await stampedContract(3);
+await stampedContract(5);
+await stampedContract(8);
 const one = await PDFDocument.create();
 one.addPage([420, 560]);
 await assert.rejects(stampContractPerforation(new Uint8Array(await one.save()), {enabled: true, mode: 'perforation', kind: 'circle_emblem', texture: 'normal', filename: '单页.pdf'}, createCanvas), /至少需要连续两页/);

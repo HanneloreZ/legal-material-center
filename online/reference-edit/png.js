@@ -1,4 +1,5 @@
 import {EditError} from './errors.js';
+import {verticalSlice} from '../shared/seal.js';
 
 function crcTable() {
   const table = new Uint32Array(256);
@@ -111,9 +112,8 @@ export function sliceVertical(rgba, width, height, parts) {
   if (parts < 2) throw new EditError('骑缝章至少需要连续两页。单页请使用普通盖章。', 'seal');
   const slices = [];
   for (let part = 0; part < parts; part++) {
-    const start = Math.round(width * part / parts);
-    const end = Math.round(width * (part + 1) / parts);
-    const sliceWidth = Math.max(1, end - start);
+    const {start, width: sliceWidth} = verticalSlice(width, parts, part);
+    const end = start + sliceWidth;
     const out = new Uint8Array(sliceWidth * height * 4);
     for (let y = 0; y < height; y++) out.set(rgba.subarray((y * width + start) * 4, (y * width + end) * 4), y * sliceWidth * 4);
     slices.push({rgba: out, width: sliceWidth, height, index: part});

@@ -171,7 +171,7 @@ export default function App(){
           <label className="slider"><span>大小<output>{Math.round((model.seal.scale??.2)*100)}%</output></span><input aria-label="章的大小" type="range" min={.08} max={.46} step={.01} value={model.seal.scale??.2} onChange={e=>setSeal({...model.seal,scale:Number(e.target.value)})}/></label>
           <label className="slider"><span>透明度<output>{Math.round((model.seal.opacity??.92)*100)}%</output></span><input aria-label="章的透明度" type="range" min={.15} max={1} step={.01} value={model.seal.opacity??.92} onChange={e=>setSeal({...model.seal,opacity:Number(e.target.value)})}/></label>
           {model.seal.mode==='perforation'&&<><label>骑缝页边<select aria-label="骑缝页边" value={model.seal.edge||'right'} onChange={e=>setSeal({...model.seal,edge:e.target.value})}><option value="right">右页边</option><option value="left">左页边</option></select></label>
-          <p className="source-note">骑缝用上面选定的章型和质感，先做质感再按页纵切到页边。原稿预览叠的是这一页的切片。导出的是新PDF，不改原文件。未勾选盖章时不会自动加。判决书和裁定书不能加模拟骑缝。</p>
+          <p className="source-note">同一枚章按这份 PDF 的页数均分，从第 1 页连续切到最后一页。除不尽的余量留在对应页，按顺序拼回仍是原来的一枚章。页数越多每页越窄；导入上限 30 页内仍只用这一枚，不另起第二枚，也不在每页重复整章。章图比页数还窄时会停止。导出的是新 PDF，不改原文件。未勾选盖章时不会自动加。判决书和裁定书不能加模拟骑缝。</p>
           <button type="button" disabled={!session||session.count<2||model.source.file.format!=='pdf'} onClick={()=>perform(exportPerforation)}>导出带骑缝的新PDF</button></>}
         </>}
         <label className="check"><input type="checkbox" checked={!!model.signature?.enabled} onChange={e=>update({signature:e.target.checked?{enabled:true,font:'xiaolai',name:'沈予安',x:.68,y:.84}:{enabled:false}})}/>加一枚字体模拟签名</label>

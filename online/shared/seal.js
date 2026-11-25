@@ -238,15 +238,26 @@ export function knockoutPaper(rgba) {
   }
   return out;
 }
+// One seal is split across every page. Boundaries use rounding so the parts
+// meet exactly and the last page keeps the remainder. A second seal is not started.
+export function verticalSlice(width, parts, index) {
+  if (!Number.isInteger(parts) || parts < 2) throw Error('骑缝章至少需要连续两页。');
+  if (!Number.isInteger(index) || index < 0 || index >= parts) throw Error('骑缝页码超出范围。');
+  const start = Math.round(width * index / parts);
+  const end = Math.round(width * (index + 1) / parts);
+  if (end <= start) throw Error(`这一枚章只有 ${width} 像素宽，不能均分成 ${parts} 页。请减少页数，或换一张更宽的章图。`);
+  return {start, end, width: end - start};
+}
 export function sealPlacement(pageW, pageH, stampW, stampH, seal, pageIndex = 0) {
   const scale = seal.scale ?? .2;
   const pages = Math.max(1, seal.pageCount || 1);
   const slice = seal.mode === 'perforation' && pages > 1;
-  const nominal = slice ? Math.max(1, Math.round(stampW / pages)) : stampW;
-  const sx = slice ? Math.min(pageIndex, pages - 1) * Math.round(stampW / pages) : 0;
-  const sw = Math.min(nominal, Math.max(1, stampW - sx));
-  const dw = slice ? pageW * scale / pages : pageW * scale;
-  const dh = dw * (stampH / sw);
+  const part = slice ? verticalSlice(stampW, pages, Math.min(pageIndex, pages - 1)) : {start: 0, width: stampW};
+  const sx = part.start;
+  const sw = part.width;
+  const fullW = pageW * scale;
+  const dw = slice ? fullW * (sw / stampW) : fullW;
+  const dh = fullW * (stampH / stampW);
   let x = slice ? (seal.edge === 'left' ? 0 : pageW - dw) : (seal.xRatio ?? .72) * pageW;
   let y = (seal.yRatio ?? .55) * pageH - dh / 2;
   x = Math.max(0, Math.min(Math.max(0, pageW - dw), x));
